@@ -2,16 +2,6 @@
  * Created by kelvinsun on 18/4/10.
  */
 
-/**
- * Quick object check - this is primarily used to tell
- * Objects from primitive values when we know the value
- * is a JSON-compliant type.
- * @param obj {?*}
- * @returns {boolean}
- */
-export function isObject (obj) {
-    return obj !== null && typeof(obj) === 'object';
-}
 
 const arrayProto = Array.prototype;
 export const arrayMethods = Object.create(arrayProto);

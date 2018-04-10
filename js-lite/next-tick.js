@@ -1,7 +1,7 @@
 /* @flow */
 /* globals MessageChannel */
 
-import { noop } from 'shared/util';
+import { noop } from './util.js';
 import { handleError } from '../js/util.js';
 import { isIOS, isNative } from './env.js';
 
@@ -82,42 +82,60 @@ if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
 }
 
 // Determine microtask defer implementation.
+// 翻译:
+// 判断 microtask 的方式具体应该用哪个延迟执行的方法.
 /* istanbul ignore next, $flow-disable-line */
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
-    const p = Promise.resolve()
+    // 有原生 promise 支持的话
+    const p = Promise.resolve();
+    // 就直接使用 promise 当场触发 then 的方式
     microTimerFunc = () => {
-        p.then(flushCallbacks)
+        p.then(flushCallbacks);
         // in problematic UIWebViews, Promise.then doesn't completely break, but
         // it can get stuck in a weird state where callbacks are pushed into the
         // microtask queue but the queue isn't being flushed, until the browser
         // needs to do some other work, e.g. handle a timer. Therefore we can
         // "force" the microtask queue to be flushed by adding an empty timer.
-        if (isIOS) setTimeout(noop)
+        // 翻译:
+        // 在有问题的 UIWebViews 中, Promise.then 不会彻底打破,
+        // 但是当 callbacks 都被 push 到 microtask 队列中而这个 microtask 队列又没有被冲刷掉的时候,
+        // 它会被卡在一个奇怪的状态, 直到浏览器需要去做其他的操作, 比如处理一个 timer.
+        // 因此我们可以通过添加一个空的 timer 来“强制”冲刷 microtask 队列.
+        if (isIOS) setTimeout(noop);
     }
 } else {
     // fallback to macro
+    // 实在不行就是用 macro 来做降级处理
     microTimerFunc = macroTimerFunc
 }
 
 /**
  * Wrap a function so that if any code inside triggers state change,
  * the changes are queued using a (macro) task instead of a microtask.
+ * 翻译:
+ * 包装一个函数, 使用 (macro) task 来代替 microtask 处理这个函数里可能对 state 进行的任何修改.
  *
  * @param fn {Function}
  * @returns {Function}
  */
 export function withMacroTask (fn) {
+    // 如果函数上有 _withTask 就直接返回那个值
+    // 其他情况下给 _withTask 赋值处理函数, 函数内容是:
+    // 设置全局变量启用 (macro) task
+    // 执行函数本体
+    // 设置全局变量禁用 (macro) task
+    // 返回结果
     return fn._withTask || (fn._withTask = function () {
         useMacroTask = true;
         const res = fn.apply(null, arguments);
         useMacroTask = false;
         return res;
-    })
+    });
 }
 
 /**
- * @param cb {?Function}
- * @param ctx {?Object}
+ * @param cb {Function?}
+ * @param ctx {Object?}
  */
 export function nextTick (cb, ctx) {
     let _resolve;
@@ -139,7 +157,7 @@ export function nextTick (cb, ctx) {
     if (!pending) {
         // 如果没有阻塞的就运行, 并且设置阻塞
         pending = true;
-        // 这个地方的区别看一下
+        // 在不同环境下使用不同的 nextTick 方法来执行 callback 队列里的回调, 具体逻辑看上文
         if (useMacroTask) {
             macroTimerFunc();
         } else {

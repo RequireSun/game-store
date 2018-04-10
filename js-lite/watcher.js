@@ -1,10 +1,13 @@
 /* @flow */
 
 import {
-    isObject,
     parsePath,
     handleError,
 } from '../js/util.js';
+
+import {
+    isObject,
+} from './util.js';
 
 import Dep, {pushTarget, popTarget} from './dep.js';
 
@@ -40,6 +43,7 @@ export default class Watcher {
     // deep;
     // /**
     //  * 用户调用 $watch 的时候这个值会传 true
+    //  * 好象是因为不信任用户传入的 callback, 所以要特殊标记 user
     //  * @type {boolean}
     //  */
     // user;
@@ -254,6 +258,8 @@ export default class Watcher {
     /**
      * Scheduler job interface.
      * Will be called by the scheduler.
+     * 调度程序处理接口.
+     * 调度程序中会调用这个接口.
      */
     run() {
         if (this.active) {
@@ -265,27 +271,33 @@ export default class Watcher {
      * @param cb {Function}
      */
     getAndInvoke(cb) {
+        // 执行 get 函数获取数值, 顺便更新依赖(get 里面会 set Dep.target, 并且还会触发 observer 里的依赖分析)
         const value = this.get();
+
         if (
             value !== this.value ||
             // Deep watchers and watchers on Object/Arrays should fire even
             // when the value is the same, because the value may
             // have mutated.
+            // 翻译:
+            // 即使 value 值没有变, 深度监听的情况和 watcher 被附在对象 / 数组上的情况中
+            // 都应该触发对应 watcher, 因为它们内部的值可能有改变.
             isObject(value) ||
             this.deep
         ) {
             // set new value
+            // 读出目前的值
             const oldValue = this.value;
+            // 修改属性值
             this.value = value;
+            //TODO 这个不知道是干啥的
             this.dirty = false;
-            if (this.user) {
-                try {
-                    cb.call(this.vm, value, oldValue);
-                } catch (e) {
-                    handleError(e, this.vm, `callback for watcher "${this.expression}"`);
-                }
-            } else {
+            // 因为我们的情景都是用户绑定的, 所以这里就把非用户绑定的部分删掉了
+            // 调用 callback
+            try {
                 cb.call(this.vm, value, oldValue);
+            } catch (e) {
+                handleError(e, this.vm, `callback for watcher "${this.expression}"`);
             }
         }
     }
