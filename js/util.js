@@ -18,7 +18,7 @@ export const hasProto = '__proto__' in {};
 
 const arrayProto = Array.prototype;
 export const arrayMethods = Object.create(arrayProto);
-const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
+export const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
 
 /**
  * Define a property.
@@ -85,7 +85,6 @@ export function remove (arr, item) {
  */
 const bailRE = /[^\w.$]/;
 /**
- *
  * @param path {string}
  * @returns {Function|*}
  */
@@ -97,6 +96,7 @@ export function parsePath (path) {
 
     return function (obj) {
         for (let i = 0; i < segments.length; i++) {
+            // 中间找不到的话就相当于数据链路不对, 直接返回了就
             if (!obj) return;
             obj = obj[segments[i]];
         }

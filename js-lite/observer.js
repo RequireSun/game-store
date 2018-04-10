@@ -6,26 +6,19 @@ import {
     arrayKeys,
     arrayMethods,
     isPlainObject,
-} from './util.js';
+} from '../js/util.js';
 
-/**
- * In some cases we may want to disable observation inside a component's
- * update computation.
- * @type {boolean}
- */
-export let shouldObserve = true;
-/**
- * @param value {boolean}
- */
-export function toggleObserving (value) {
-    shouldObserve = value;
-}
+import Dep from './dep.js';
 
 /**
  * Observer class that is attached to each observed
  * object. Once attached, the observer converts the target
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
+ * 翻译:
+ * 将监听者附到被监听对象上. 通过修改原对象的属性为 getter / setter 方法来监听更新和分发消息.
+ *
+ * @desc 这个地方是外层的 observe 确保了一定传进来的是 object, 在 Observer 内部并没有校验机制
  */
 export class Observer {
     // /**
@@ -45,13 +38,12 @@ export class Observer {
         this.value = value;
         this.dep = new Dep();
         this.vmCount = 0;
+        // 为 value 添加 ob 属性
         def(value, '__ob__', this);
         // 数据类型是否是数组
         if (Array.isArray(value)) {
             // 如果是数组的话
-            const augment = hasProto
-                ? protoAugment
-                : copyAugment;
+            const augment = hasProto ? protoAugment : copyAugment;
             // 给对象添加数组应该有的属性
             // 有 __proto__ 的直接修改原型链
             // 没有 __proto__ 的直接拷贝属性到 value 上
@@ -60,7 +52,7 @@ export class Observer {
             this.observeArray(value);
         } else {
             // 逐个监听对象内容
-            this.walk(value)
+            this.walk(value);
         }
     }
 
@@ -68,11 +60,16 @@ export class Observer {
      * Walk through each property and convert them into
      * getter/setters. This method should only be called when
      * value type is Object.
+     * 翻译:
+     * 遍历属性并逐个把它们转化成 getter / setter 的格式.
+     * 这个函数只应该在 obj 是对象的时候调用.
      * @param obj {Object}
      */
     walk (obj) {
         const keys = Object.keys(obj);
+
         for (let i = 0; i < keys.length; i++) {
+            // 逐个监听
             defineReactive(obj, keys[i]);
         }
     }
@@ -138,6 +135,8 @@ function dependArray (value) {
 
 /**
  * Define a reactive property on an Object.
+ * 翻译:
+ * 往原属性上绑监听
  * @param obj {Object}
  * @param key {string}
  * @param val {*?}
@@ -159,13 +158,13 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
     // 把 getter 和 setter 缓存下来
     const getter = property && property.get;
     const setter = property && property.set;
-    // 当原对象没有 getter 和 setter, 且只有前两个参数的时候, 直接读取数值(所以就是非引用数据类型咯)
+    // 当原对象没有 getter 和 setter, 且只有前两个参数的时候, 直接读取数值(所以就是非引用数据类型咯, 其实没有被初始过的对象也是没有 set / get 的)
     if ((!getter || setter) && arguments.length === 2) {
         val = obj[key];
     }
     // 浅拷贝时不深层监听
     // 深层监听完后把监听结果保存下来
-    // 其实最后用完了之后这个 observer 被抛弃了?
+    // 如果 observe 有返回值, 证明这个是个对象
     let childOb = !shallow && observe(val);
 
     Object.defineProperty(obj, key, {
@@ -179,37 +178,32 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
             if (Dep.target) {
                 dep.depend();
                 if (childOb) {
+                    // childOb 存在时证明 val 是一个对象, 需要给 child 的依赖也加到目前的 target 上
                     childOb.dep.depend();
                     if (Array.isArray(value)) {
-                        // 子元素是数组的时候要换一种方式监听
                         dependArray(value);
                     }
                 }
             }
-            // 返回上面取回来的数据
-            return value;
+            return value
         },
         set: function reactiveSetter (newVal) {
-            const value = getter ? getter.call(obj) : val;
+            const value = getter ? getter.call(obj) : val
             /* eslint-disable no-self-compare */
             if (newVal === value || (newVal !== newVal && value !== value)) {
-                // 自比较应该是为了防止 NaN 之类的东西吧?
-                return ;
+                return
             }
             /* eslint-enable no-self-compare */
-            if (customSetter) {
-                // 还能自定义 setter 玩? 之前有校验 dev 才能用, 我直接放开没问题吧?
+            if (process.env.NODE_ENV !== 'production' && customSetter) {
                 customSetter()
             }
-            // 如果有 setter 就用 setter, 否则直接赋值了(相当于把 value 值托管在了这整个 defineReactive 的闭包内部?)
             if (setter) {
-                setter.call(obj, newVal);
+                setter.call(obj, newVal)
             } else {
-                val = newVal;
+                val = newVal
             }
-            // 深层拷贝的情况下还要去重新构造监听(旧的监听没有 destroy 么, 有空去压一下 vue, 看看会不会内存泄露, 应该是会泄漏的, 因为监听和通知数组都是只进不出, 肯定会爆的)
-            childOb = !shallow && observe(newVal);
-            dep.notify();
+            childOb = !shallow && observe(newVal)
+            dep.notify()
         }
     })
 }
@@ -237,19 +231,23 @@ export function observe(value, asRootData) {
         // 对象存在监视对象, 就不做重复的监控操作了, 直接把原来的返回回去
         ob = value.__ob__;
     } else if (
-        shouldObserve &&
         (Array.isArray(value) || isPlainObject(value)) &&
         Object.isExtensible(value)
     ) {
+        // 暂时没想到不能监听的地方, 直接干掉
         // 因为我这个东西跟 vue 无关, 肯定不能 server rendering, 所以直接干掉了那个条件
         // 这个也肯定不是 vue, 所以直接删掉 isVue 也肯定没错
+        // 原数据是普通数组或者对象, 并且可以扩展, 就去监听(不能扩展的真的没法监听)
+        // 进行监听并返回
         ob = new Observer(value);
     }
     //TODO 这个值还没找到传的地方
+    // 如果我没猜错的话, 这个是用来区分不同 vm 根树的?
     if (asRootData && ob) {
         ob.vmCount++;
     }
-    return ob
+
+    return ob;
 }
 
 
