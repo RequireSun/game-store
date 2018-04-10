@@ -13,9 +13,6 @@ export function isObject (obj) {
     return obj !== null && typeof(obj) === 'object';
 }
 
-// can we use __proto__?
-export const hasProto = '__proto__' in {};
-
 const arrayProto = Array.prototype;
 export const arrayMethods = Object.create(arrayProto);
 export const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
@@ -103,52 +100,6 @@ export function parsePath (path) {
         return obj;
     }
 }
-
-/* istanbul ignore next */
-/**
- *
- * @param Ctor {*}
- * @returns {boolean}
- */
-export function isNative (Ctor) {
-    return typeof Ctor === 'function' && /native code/.test(Ctor.toString());
-}
-
-let _Set;
-/* istanbul ignore if */ // $flow-disable-line
-if (typeof Set !== 'undefined' && isNative(Set)) {
-    // use native Set when available.
-    _Set = Set;
-} else {
-    // a non-standard Set polyfill that only works with primitive keys.
-    _Set = class Set implements SimpleSet {
-        // /**
-        //  * @type {Object}
-        //  */
-        // set;
-        constructor () {
-            this.set = Object.create(null);
-        }
-        /**
-         * @param key {string|number}
-         * @returns {boolean}
-         */
-        has (key) {
-            return this.set[key] === true;
-        }
-        /**
-         * @param key {string|number}
-         */
-        add (key) {
-            this.set[key] = true;
-        }
-        clear () {
-            this.set = Object.create(null);
-        }
-    }
-}
-
-export { _Set };
 
 // 自己写的
 

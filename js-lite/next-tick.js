@@ -3,7 +3,7 @@
 
 import { noop } from 'shared/util';
 import { handleError } from '../js/util.js';
-import { isIOS, isNative } from './env';
+import { isIOS, isNative } from './env.js';
 
 const callbacks = [];
 let pending = false;
@@ -40,29 +40,41 @@ function flushCallbacks () {
 // 所以我们默认使用 microtask, 但是也暴露了一个方法以在必要时强制使用 (macro) task (e.g. 在通过 v-on 绑定的事件处理中).
 let microTimerFunc;
 let macroTimerFunc;
-let useMacroTask = false;
+let useMacroTask = false;   // 强制使用 (marco) task 的标记
 
 // Determine (macro) task defer implementation.
 // Technically setImmediate should be the ideal choice, but it's only available
 // in IE. The only polyfill that consistently queues the callback after all DOM
 // events triggered in the same loop is by using MessageChannel.
+// 翻译:
+// 决定使用 (macro) task 延迟执行函数.
+// 技术上讲 setImmediate 应该是个理想的选择, 但是这个方法只在 IE 上可用.
+// 唯一的总是在同一个循环中的所有的 DOM 事件全部触发完成后进行队列回调的 polyfill 是通过使用 MessageChannel 来实现的.
+//
+// 这个函数的宗旨就是在事件流之外对 callback 数组进行执行和清空
 /* istanbul ignore if */
 if (typeof setImmediate !== 'undefined' && isNative(setImmediate)) {
+    // 原生有 setImmediate, 那就是 IE 了, 直接 macro 就定义成 setImmediate 就可以了
     macroTimerFunc = () => {
-        setImmediate(flushCallbacks)
-    }
+        setImmediate(flushCallbacks);
+    };
 } else if (typeof MessageChannel !== 'undefined' && (
         isNative(MessageChannel) ||
         // PhantomJS
         MessageChannel.toString() === '[object MessageChannelConstructor]'
     )) {
-    const channel = new MessageChannel()
-    const port = channel.port2
-    channel.port1.onmessage = flushCallbacks
+    // 其他情况下有 MessageChannel 支持的时候
+    const channel = new MessageChannel();
+    // 保存 2 号端口
+    const port = channel.port2;
+    // 给 1 号端口设置回调, 内容就是想要执行的事情
+    channel.port1.onmessage = flushCallbacks;
+    // macro 函数体就是用端口 2 给端口 1 发消息, 这样就可以触发 flush 了
     macroTimerFunc = () => {
         port.postMessage(1)
     }
 } else {
+    // 最后最万般无奈的时候就用 setTimeout 来实现
     /* istanbul ignore next */
     macroTimerFunc = () => {
         setTimeout(flushCallbacks, 0)
@@ -90,13 +102,16 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
 /**
  * Wrap a function so that if any code inside triggers state change,
  * the changes are queued using a (macro) task instead of a microtask.
+ *
+ * @param fn {Function}
+ * @returns {Function}
  */
-export function withMacroTask (fn: Function): Function {
+export function withMacroTask (fn) {
     return fn._withTask || (fn._withTask = function () {
-        useMacroTask = true
-        const res = fn.apply(null, arguments)
-        useMacroTask = false
-        return res
+        useMacroTask = true;
+        const res = fn.apply(null, arguments);
+        useMacroTask = false;
+        return res;
     })
 }
 

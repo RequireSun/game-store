@@ -1,6 +1,7 @@
 /* @flow */
 
-import {_Set as Set, isObject} from '../js/util.js'
+import {isObject} from '../js/util.js';
+import {_Set as Set, } from './env.js';
 // import { SimpleSet } from '../util/index'
 
 const seenObjects = new Set();
