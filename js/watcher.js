@@ -2,7 +2,13 @@
 
 import {
     isObject,
+    parsePath,
+    handleError,
 } from './util.js';
+
+import Dep, {pushTarget, popTarget} from './dep.js';
+
+import {traverse} from './traverse.js';
 
 let uid = 0;
 

@@ -80,4 +80,78 @@ export function remove (arr, item) {
 }
 
 
+/**
+ * Parse simple path.
+ */
+const bailRE = /[^\w.$]/;
+/**
+ *
+ * @param path {string}
+ * @returns {Function|*}
+ */
+export function parsePath (path) {
+    if (bailRE.test(path)) {
+        return;
+    }
+    const segments = path.split('.');
 
+    return function (obj) {
+        for (let i = 0; i < segments.length; i++) {
+            if (!obj) return;
+            obj = obj[segments[i]];
+        }
+        return obj;
+    }
+}
+
+/* istanbul ignore next */
+/**
+ *
+ * @param Ctor {*}
+ * @returns {boolean}
+ */
+export function isNative (Ctor) {
+    return typeof Ctor === 'function' && /native code/.test(Ctor.toString());
+}
+
+let _Set;
+/* istanbul ignore if */ // $flow-disable-line
+if (typeof Set !== 'undefined' && isNative(Set)) {
+    // use native Set when available.
+    _Set = Set;
+} else {
+    // a non-standard Set polyfill that only works with primitive keys.
+    _Set = class Set implements SimpleSet {
+        // /**
+        //  * @type {Object}
+        //  */
+        // set;
+        constructor () {
+            this.set = Object.create(null);
+        }
+        /**
+         * @param key {string|number}
+         * @returns {boolean}
+         */
+        has (key) {
+            return this.set[key] === true;
+        }
+        /**
+         * @param key {string|number}
+         */
+        add (key) {
+            this.set[key] = true;
+        }
+        clear () {
+            this.set = Object.create(null);
+        }
+    }
+}
+
+export { _Set };
+
+// 自己写的
+
+export function handleError(...args) {
+    console.error(...args);
+}
