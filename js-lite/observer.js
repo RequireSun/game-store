@@ -98,8 +98,11 @@ export class Observer {
 
             for (let i = 0; i < keys.length; i++) {
                 const property = Object.getOwnPropertyDescriptor(value, keys[i]);
-                //TODO 这个地方是个问题, 如果是 set 进去的, 很有可能就判断不了了
-                if (!property || !property.get || !property.set) {
+                if (
+                    !property ||
+                    !property.get || !property.get._isOb ||
+                    !property.set || !property.set._isOb
+                ) {
                     defineReactive(value, keys[i]);
                 }
             }
@@ -190,47 +193,66 @@ export function defineReactive(obj, key, val, customSetter, shallow) {
     // 如果 observe 有返回值, 证明这个是个对象
     let childOb = !shallow && observe(val);
 
+    const reactiveGetter = function () {
+        // 如果有 getter 就用 getter 获取数据, 否则就是直接用刚才取到的 val 做数据(也可能没取到, 所以就从整个函数体的参数上获取)
+        const value = getter ? getter.call(obj) : val;
+        // 熟悉的依赖分析步骤
+        // 如果全局 Dep 的 target 上有属性, 就说明正处于依赖分析阶段, 去添加依赖
+        if (Dep.target) {
+            dep.depend();
+            if (childOb) {
+                // childOb 存在时证明 val 是一个对象, 需要给 child 的依赖也加到目前的 target 上
+                childOb.dep.depend();
+                if (Array.isArray(value)) {
+                    dependArray(value);
+                }
+            }
+        }
+        return value
+    };
+
+    const reactiveSetter = function (newVal) {
+        // 先获取原来的值
+        const value = getter ? getter.call(obj) : val;
+        // 原值相同或者原值与新值中的某一个自己不等于自己 (一般是 NaN), 就不更新了
+        /* eslint-disable no-self-compare */
+        if (newVal === value || (newVal !== newVal && value !== value)) {
+            return;
+        }
+        //@EDITED 把非线上环境的判断去掉了, 为什么开发中不允许用 customSetter 啊
+        /* eslint-enable no-self-compare */
+        if (customSetter) {
+            customSetter();
+        }
+        if (setter) {
+            setter.call(obj, newVal);
+        } else {
+            val = newVal;
+        }
+        childOb = !shallow && observe(newVal);
+        dep.notify();
+    };
+
+    Object.defineProperty(reactiveGetter, '_isOb', {
+        enumerable: false,
+        value: true,
+    });
+
+    Object.defineProperty(reactiveSetter, '_isOb', {
+        enumerable: false,
+        value: true,
+    });
+    // 偷偷的把 dep 放到 setter 上, 这样在外面就可以呼起了
+    Object.defineProperty(reactiveSetter, '_dep', {
+        enumerable: false,
+        value: dep,
+    });
+
     Object.defineProperty(obj, key, {
         enumerable: true,
         configurable: true,
-        get: function reactiveGetter() {
-            // 如果有 getter 就用 getter 获取数据, 否则就是直接用刚才取到的 val 做数据(也可能没取到, 所以就从整个函数体的参数上获取)
-            const value = getter ? getter.call(obj) : val;
-            // 熟悉的依赖分析步骤
-            // 如果全局 Dep 的 target 上有属性, 就说明正处于依赖分析阶段, 去添加依赖
-            if (Dep.target) {
-                dep.depend();
-                if (childOb) {
-                    // childOb 存在时证明 val 是一个对象, 需要给 child 的依赖也加到目前的 target 上
-                    childOb.dep.depend();
-                    if (Array.isArray(value)) {
-                        dependArray(value);
-                    }
-                }
-            }
-            return value
-        },
-        set: function reactiveSetter(newVal) {
-            // 先获取原来的值
-            const value = getter ? getter.call(obj) : val;
-            // 原值相同或者原值与新值中的某一个自己不等于自己 (一般是 NaN), 就不更新了
-            /* eslint-disable no-self-compare */
-            if (newVal === value || (newVal !== newVal && value !== value)) {
-                return;
-            }
-            //@EDITED 把非线上环境的判断去掉了, 为什么开发中不允许用 customSetter 啊
-            /* eslint-enable no-self-compare */
-            if (customSetter) {
-                customSetter();
-            }
-            if (setter) {
-                setter.call(obj, newVal);
-            } else {
-                val = newVal;
-            }
-            childOb = !shallow && observe(newVal);
-            dep.notify();
-        }
+        get: reactiveGetter,
+        set: reactiveSetter,
     });
 }
 

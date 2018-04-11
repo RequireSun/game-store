@@ -9,8 +9,27 @@
 <script type="module">
     import Watcher from './js-lite/watcher.js';
     import {observe,} from './js-lite/observer.js';
-    import {setInPath,} from './js-lite/util.js';
+    import {bailRE,isObject,setInPath,getParentPath,} from './js-lite/util.js';
+    import {nextTick,} from './js-lite/next-tick.js';
 
+    function getDep(obj, path) {
+        if (bailRE.test(path)) {
+            return;
+        }
+        const segments = path.split('.');
+
+        for (let i = 0; i < segments.length - 1; i++) {
+            // 中间找不到的话就相当于数据链路不对, 直接返回了就
+            if (!obj) return;
+            obj = obj[segments[i]];
+        }
+        // 获取最后一项的 descriptor
+        const property = Object.getOwnPropertyDescriptor(obj, segments[segments.length - 1]);
+
+        return property && property.set && property.set._dep;
+    }
+
+    //WARN 各种处理的时候一定要记得用 this._data 而不是 this, 否则容易出神奇的问题
     //TODO watch 的 oldValue 有点问题, 一直跟原来的值一样, 代码里运行有问题, console 里运行就正常
     class DataStore {
         constructor(value) {
@@ -27,7 +46,7 @@
             });
 
             observe(data, true);
-
+            // 防止 data 被便利出来
             Object.defineProperty(this, '_data', {
                 configurable: false,    // 不可重定义
                 enumerable: false,      // 不可被遍历
@@ -67,16 +86,57 @@
             });
         }
 
+//        setIn(path, value) {
+//            const segments = setInPath(this, path, value);
+//            // 有返回值就是成功了, 这时候重新建立监控
+//            if (segments) {
+//                // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
+//                let target = this._data;
+//                for (let i = 0; i < segments.length && target && target.__ob__; ++i) {
+//                    const property = Object.getOwnPropertyDescriptor(target, segments[i]);
+//                    if (
+//                        !property ||
+//                        !property.get || !property.get._isOb ||
+//                        !property.set || !property.set._isOb
+//                    ) {
+//                        break;
+//                    }
+//                    target = target[segments[i]];
+//                }
+//                // 重新进行监控
+//                if (target && target.__ob__) {
+//                    target.__ob__.supplement();
+//                    // 现在需要再进行 watcher 的重放
+//                    if (this._data && Array.isArray(this._data._watchers)) {
+//                        this._data._watchers.forEach(item => {
+//                            item.value = item.get();
+//                        });
+//                    }
+//                    //TODO 这个地方需要触发一下对应对象的 notify 接口
+//                    const dep = getDep(this._data, path);
+//                    dep && dep.notify && dep.notify();
+//                }
+//            }
+//        }
         setIn(path, value) {
-            const segments = setInPath(this, path, value);
+            const parent = getParentPath(this._data, path);
             // 有返回值就是成功了, 这时候重新建立监控
-            if (segments) {
+            if (isObject(parent)) {
+                // 因为 getPath 里面已经判断了路径的合法性了, 所以这里直接用应该没问题
+                const segments = path.split('.');
+                // 这个地方的赋值是为了让这个 key 存在
+                if (!parent[segments[segments.length - 1]]) {
+                    parent[segments[segments.length - 1]] = undefined;
+                }
                 // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
                 let target = this._data;
-                for (let i = 0; i < segments.length && target && target.__ob__; ++i) {
-                    //TODO 如果这个对象有 set 和 get 属性, 很可能就会被忽略了
+                for (let i = 0; i < segments.length - 1 && target && target.__ob__; ++i) {
                     const property = Object.getOwnPropertyDescriptor(target, segments[i]);
-                    if (!property || !property.get || !property.set) {
+                    if (
+                        !property ||
+                        !property.get || !property.get._isOb ||
+                        !property.set || !property.set._isOb
+                    ) {
                         break;
                     }
                     target = target[segments[i]];
@@ -87,11 +147,30 @@
                     // 现在需要再进行 watcher 的重放
                     if (this._data && Array.isArray(this._data._watchers)) {
                         this._data._watchers.forEach(item => {
-                            item.value = item.get();
+                            // 这个地方的 set 导致了只要调用了 setIn, 就会让 watcher 的参数出错的问题
+                            // 所以这个地方需要根据 path 对 watcher 的 expression 对比, 如果对应上了, 再去重做
+                            if (0 === path.indexOf(item.expression)) {
+                                item.value = item.get();
+                            }
                         });
                     }
-                    //TODO 这个地方需要触发一下对应对象的 notify 接口
-
+                }
+                // 不管监控没监控, 都要去赋值了
+                // 第一次处理问题:
+                // 这个地方放在 nextTick 里是因为如果连续调用两个 setIn,
+                // 会使得 watch => set 流程连续执行, 而 watch 之后的 callback 的执行是 nextTick 的,
+                // 所以所有的 watch 都会堆在阻塞的 set 之后执行, 这样就会出现 callback 执行时 value 值已经被覆盖的情况
+                // 此时 callback 里的 newVal 和 oldVal 都会是同一个值了
+                // 第二次处理问题:
+                // 日, 现在头好大, 这个地方存在这么一个问题
+                // 因为 nextTick 是会在空闲时运行的, 所以会在所有的串行 a.b.c 之后运行
+                // 所以它不会根据声明的顺序执行, 常人无法理解
+                // 所以先写死了吧, 数据安全第一
+//                nextTick(() => setInPath(this._data, path, value));
+                setInPath(this._data, path, value);
+                // 如果是直接定义到了 ds 上的属性, 要记得重新 proxy 一下
+                if (1 === segments.length) {
+                    this._proxyData(segments[0]);
                 }
             }
         }
@@ -115,11 +194,28 @@
     ds.watch('obj.b', (...args) => console.log('obj.b', ...args));
     ds.watch('obj.c', (...args) => console.log('obj.c', ...args));
 
+    // 这个地方只触发了一次 obj 的 watch 是正常的
+    // 因为事件是有汇总的
+    // b 怎么又没有触发
     ds.obj.a = 1;
-    ds.obj.b = 3;
+    ds.obj.b = 3;           // 这次不触发任何事件是正常的, 因为之前没有任何处理, 这个地方有个问题, 就是一开始没有声明, 但中间赋值的数值, 会发生完全不触发事件的问题
+    ds.obj.c = 7;
+    ds.setIn('obj.c', 3);
+    ds.setIn('obj.b', 2);
     ds.setIn('obj.b', 4);
     ds.obj.b = 5;
+    ds.obj.b = 1;
+    // 一个属性存在两个 watcher 的情况 & 动态插入 watcher 的情况
+    ds.watch('obj', (...args) => console.log('obj', ...args));
+    ds.watch('obj.c', (...args) => console.log('obj.c 2', ...args));
     ds.setIn('obj.c', 4);
+
+
+    ds.c = 1;
+    ds.watch('c', (...args) => console.log('c', ...args));
+    ds.c = 2;   // 初始化的时候没有定义的变量是不会监听成功的
+    ds.setIn('c', 10);
+
 </script>
 </body>
 </html>
