@@ -119,6 +119,31 @@ export function parsePath (path) {
         return obj;
     }
 }
+/**
+ * @param obj {Object}
+ * @param path {string}
+ * @param value {*}
+ * @returns {Array.<string>|*}
+ */
+export function setInPath(obj, path, value) {
+    if (bailRE.test(path)) {
+        return;
+    }
+    const segments = path.split('.');
+
+    for (let i = 0; i < segments.length - 1; i++) {
+        // 中间找不到的话就相当于数据链路不对, 直接返回了就
+        if (!obj) return;
+        obj = obj[segments[i]];
+    }
+    // 找得到对应的父元素和找不到对应的父元素
+    if (obj) {
+        obj[segments[segments.length - 1]] = value;
+        return segments;
+    } else {
+        return;
+    }
+}
 
 
 // 自己写的

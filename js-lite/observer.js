@@ -20,6 +20,7 @@ import Dep from './dep.js';
  * 将监听者附到被监听对象上. 通过修改原对象的属性为 getter / setter 方法来监听更新和分发消息.
  *
  * @desc 这个地方是外层的 observe 确保了一定传进来的是 object, 在 Observer 内部并没有校验机制
+ * @desc Array 的 1234 定义应该是不能使用 define 函数的
  */
 export class Observer {
     // /**
@@ -35,7 +36,7 @@ export class Observer {
     //  */
     // vmCount = 0; // number of vms that has this object as root $data
 
-    constructor (value) {
+    constructor(value) {
         this.value = value;
         this.dep = new Dep();
         this.vmCount = 0;
@@ -66,7 +67,7 @@ export class Observer {
      * 这个函数只应该在 obj 是对象的时候调用.
      * @param obj {Object}
      */
-    walk (obj) {
+    walk(obj) {
         const keys = Object.keys(obj);
 
         for (let i = 0; i < keys.length; i++) {
@@ -79,9 +80,29 @@ export class Observer {
      * Observe a list of Array items.
      * @param items {Array<*>}
      */
-    observeArray (items) {
+    observeArray(items) {
         for (let i = 0, l = items.length; i < l; i++) {
             observe(items[i]);
+        }
+    }
+
+    supplement() {
+        const value = this.value;
+        // 因为这个对象一定是之前处理过了的, 所以就不往上面强化东西了
+        if (Array.isArray(value)) {
+            for (let i = 0, l = value.length; i < l; i++) {
+                !value[i].__ob__ && observe(value[i]);
+            }
+        } else {
+            const keys = Object.keys(value);
+
+            for (let i = 0; i < keys.length; i++) {
+                const property = Object.getOwnPropertyDescriptor(value, keys[i]);
+                //TODO 这个地方是个问题, 如果是 set 进去的, 很有可能就判断不了了
+                if (!property || !property.get || !property.set) {
+                    defineReactive(value, keys[i]);
+                }
+            }
         }
     }
 }
@@ -94,7 +115,7 @@ export class Observer {
  * @param src {Object}
  * @param keys {*?}
  */
-function protoAugment (target, src, keys) {
+function protoAugment(target, src, keys) {
     /* eslint-disable no-proto */
     target.__proto__ = src
     /* eslint-enable no-proto */
@@ -107,8 +128,9 @@ function protoAugment (target, src, keys) {
  * @param src {Object}
  * @param keys {Array<string>}
  */
+
 /* istanbul ignore next */
-function copyAugment (target, src, keys) {
+function copyAugment(target, src, keys) {
     for (let i = 0, l = keys.length; i < l; i++) {
         const key = keys[i];
         def(target, key, src[key]);
@@ -123,7 +145,7 @@ function copyAugment (target, src, keys) {
  * @todo 暂时看不懂为什么这么搞
  * @param value {Array<*>}
  */
-function dependArray (value) {
+function dependArray(value) {
     for (let e, i = 0, l = value.length; i < l; i++) {
         e = value[i];
         e && e.__ob__ && e.__ob__.dep.depend();
@@ -144,7 +166,7 @@ function dependArray (value) {
  * @param customSetter {Function?}
  * @param shallow {boolean?}
  */
-export function defineReactive (obj, key, val, customSetter, shallow) {
+export function defineReactive(obj, key, val, customSetter, shallow) {
     const dep = new Dep();
 
     const property = Object.getOwnPropertyDescriptor(obj, key);
@@ -152,7 +174,7 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
     // 所以原数据上的不可重定义的属性就不会监听变化了?
     // 非对象(非引用型)数据的 property 就是 undefined, 所以就直接返回了
     if (property && property.configurable === false) {
-        return ;
+        return;
     }
 
     // cater for pre-defined getter/setters
@@ -171,7 +193,7 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
     Object.defineProperty(obj, key, {
         enumerable: true,
         configurable: true,
-        get: function reactiveGetter () {
+        get: function reactiveGetter() {
             // 如果有 getter 就用 getter 获取数据, 否则就是直接用刚才取到的 val 做数据(也可能没取到, 所以就从整个函数体的参数上获取)
             const value = getter ? getter.call(obj) : val;
             // 熟悉的依赖分析步骤
@@ -188,7 +210,7 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
             }
             return value
         },
-        set: function reactiveSetter (newVal) {
+        set: function reactiveSetter(newVal) {
             // 先获取原来的值
             const value = getter ? getter.call(obj) : val;
             // 原值相同或者原值与新值中的某一个自己不等于自己 (一般是 NaN), 就不更新了
@@ -209,7 +231,7 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
             childOb = !shallow && observe(newVal);
             dep.notify();
         }
-    })
+    });
 }
 
 
@@ -224,7 +246,7 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
 export function observe(value, asRootData) {
     // 因为我的内容上不可能有 VNode, 所以就删掉 VNode 的部分了
     if (!isObject(value)) {
-        return ;
+        return;
     }
     /**
      * @type {Observer|void}

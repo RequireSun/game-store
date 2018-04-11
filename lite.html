@@ -8,8 +8,10 @@
 <script type="module" src="js-lite/watcher.js"></script>
 <script type="module">
     import Watcher from './js-lite/watcher.js';
-    import {observe} from './js-lite/observer.js';
+    import {observe,} from './js-lite/observer.js';
+    import {setInPath,} from './js-lite/util.js';
 
+    //TODO watch 的 oldValue 有点问题, 一直跟原来的值一样, 代码里运行有问题, console 里运行就正常
     class DataStore {
         constructor(value) {
             const data = {};
@@ -66,7 +68,32 @@
         }
 
         setIn(path, value) {
+            const segments = setInPath(this, path, value);
+            // 有返回值就是成功了, 这时候重新建立监控
+            if (segments) {
+                // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
+                let target = this._data;
+                for (let i = 0; i < segments.length && target && target.__ob__; ++i) {
+                    //TODO 如果这个对象有 set 和 get 属性, 很可能就会被忽略了
+                    const property = Object.getOwnPropertyDescriptor(target, segments[i]);
+                    if (!property || !property.get || !property.set) {
+                        break;
+                    }
+                    target = target[segments[i]];
+                }
+                // 重新进行监控
+                if (target && target.__ob__) {
+                    target.__ob__.supplement();
+                    // 现在需要再进行 watcher 的重放
+                    if (this._data && Array.isArray(this._data._watchers)) {
+                        this._data._watchers.forEach(item => {
+                            item.value = item.get();
+                        });
+                    }
+                    //TODO 这个地方需要触发一下对应对象的 notify 接口
 
+                }
+            }
         }
     }
 
@@ -82,9 +109,17 @@
 
     window.ds = ds;
 
-    ds.watch('obj.a', (...args) => console.log(...args));
+    ds.watch('a', (...args) => console.log('a', ...args));
+    ds.watch('obj', (...args) => console.log('obj', ...args));
+    ds.watch('obj.a', (...args) => console.log('obj.a', ...args));
+    ds.watch('obj.b', (...args) => console.log('obj.b', ...args));
+    ds.watch('obj.c', (...args) => console.log('obj.c', ...args));
 
     ds.obj.a = 1;
+    ds.obj.b = 3;
+    ds.setIn('obj.b', 4);
+    ds.obj.b = 5;
+    ds.setIn('obj.c', 4);
 </script>
 </body>
 </html>

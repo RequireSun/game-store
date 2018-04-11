@@ -129,7 +129,7 @@ export default class Watcher {
         this.expression = expOrFn.toString();
         // parse expression for getter
         if (typeof expOrFn === 'function') {
-            this.getter = expOrFn
+            this.getter = expOrFn;
         } else {
             this.getter = parsePath(expOrFn);
             // 那如果我监视一个目前还没有注册的属性呢, 会怎么样
@@ -308,7 +308,7 @@ export default class Watcher {
             this.value = this.get();
             this.dirty = false;
         }
-        return this.value
+        return this.value;
     }
 
     /**
@@ -316,7 +316,7 @@ export default class Watcher {
      */
     depend() {
         if (this.dep && Dep.target) {
-            this.dep.depend()
+            this.dep.depend();
         }
     }
 
