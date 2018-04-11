@@ -1,17 +1,15 @@
 /* @flow */
 
 import {
+    isObject,
     parsePath,
     handleError,
-} from '../js/util.js';
-
-import {
-    isObject,
 } from './util.js';
 
 import Dep, {pushTarget, popTarget} from './dep.js';
 
 import {traverse} from './traverse.js';
+import {queueWatcher} from './scheduler.js';
 
 let uid = 0;
 

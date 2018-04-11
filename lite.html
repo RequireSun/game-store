@@ -8,24 +8,23 @@
 <script type="module" src="js-lite/watcher.js"></script>
 <script type="module">
     import Watcher from './js-lite/watcher.js';
-    import {Observer} from './js-lite/observer.js';
+    import {observe} from './js-lite/observer.js';
 
-    class DataStore extends Observer {
+    class DataStore {
         constructor(value) {
             const data = {};
             if (value) {
                 Object.assign(data, value);
             }
-
-            super(data);
-
             // 为了满足 watcher 的需求
-            Object.defineProperty(this, '_watchers', {
+            Object.defineProperty(data, '_watchers', {
                 configurable: false,    // 不可重定义
                 enumerable: false,      // 不可被遍历
                 writable: true,         // 可修改?
                 value: [],
             });
+
+            observe(data, true);
 
             Object.defineProperty(this, '_data', {
                 configurable: false,    // 不可重定义
@@ -49,23 +48,43 @@
                     },
                     set(newVal) {
                         this._data[key] = newVal;
+                        // // 如果以前存在 key 值的话, 在初始化的 observe 里应该就已经监听过了
+                        // let hasBefore = !!this._data[key];
+                        // if (!hasBefore) {
+                        //     //TODO 是不是应该还要再往根树的监听依赖上加一下
+                        //     observe(newVal);
+                        // }
                     },
                 });
         }
 
         watch(key, cb) {
-            new Watcher(this, key, cb, {
+            new Watcher(this._data, key, cb, {
                 user: true,
                 deep: true,
             });
         }
+
+        setIn(path, value) {
+
+        }
     }
 
-    var ds = new DataStore('a', (...args) => {console.log(...args);});
+    var ds = new DataStore({
+        obj: {
+            a: 3
+        },
+        a: 1,
+        b: 2,
+    });
 
     console.log(ds);
 
     window.ds = ds;
+
+    ds.watch('obj.a', (...args) => console.log(...args));
+
+    ds.obj.a = 1;
 </script>
 </body>
 </html>

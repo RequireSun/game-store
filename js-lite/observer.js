@@ -1,12 +1,11 @@
 import {
     def,
     hasOwn,
+    isObject,
+    isPlainObject,
     arrayKeys,
     arrayMethods,
-    isPlainObject,
-} from '../js/util.js';
-
-import {isObject,} from './util.js';
+} from './util.js';
 
 import {hasProto,} from "./env.js";
 
@@ -190,22 +189,25 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
             return value
         },
         set: function reactiveSetter (newVal) {
-            const value = getter ? getter.call(obj) : val
+            // 先获取原来的值
+            const value = getter ? getter.call(obj) : val;
+            // 原值相同或者原值与新值中的某一个自己不等于自己 (一般是 NaN), 就不更新了
             /* eslint-disable no-self-compare */
             if (newVal === value || (newVal !== newVal && value !== value)) {
-                return
+                return;
             }
+            //@EDITED 把非线上环境的判断去掉了, 为什么开发中不允许用 customSetter 啊
             /* eslint-enable no-self-compare */
-            if (process.env.NODE_ENV !== 'production' && customSetter) {
-                customSetter()
+            if (customSetter) {
+                customSetter();
             }
             if (setter) {
-                setter.call(obj, newVal)
+                setter.call(obj, newVal);
             } else {
-                val = newVal
+                val = newVal;
             }
-            childOb = !shallow && observe(newVal)
-            dep.notify()
+            childOb = !shallow && observe(newVal);
+            dep.notify();
         }
     })
 }
@@ -216,7 +218,7 @@ export function defineReactive (obj, key, val, customSetter, shallow) {
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
  * @param value {*?}
- * @param asRootData {?boolean}
+ * @param asRootData {boolean?}
  * @returns {Observer|void}
  */
 export function observe(value, asRootData) {

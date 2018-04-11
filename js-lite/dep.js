@@ -2,7 +2,7 @@
  * Created by kelvinsun on 18/4/10.
  */
 
-import {remove} from '../js/util.js';
+import {remove} from './util.js';
 
 // Dep 统计用的 uid
 let uid = 0;
