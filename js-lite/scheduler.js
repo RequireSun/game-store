@@ -1,7 +1,8 @@
 /**
  * Created by kelvinsun on 18/4/10.
  */
-import {nextTick} from './next-tick.js';
+import {nextTick,} from './next-tick.js';
+import {devtools,} from './env.js';
 
 export const MAX_UPDATE_COUNT = 100;
 /**
@@ -42,6 +43,48 @@ function resetSchedulerState () {
     // 等待标记和是否已冲掉的标记
     waiting = flushing = false
 }
+
+/**
+ * @edited 下面这些内容都是更新组件用的, 所以应该是用不到了
+ */
+// /**
+//  * 调用 update 钩子, 应该用不到了, 这里是没有生命周期钩子的
+//  * @param queue
+//  */
+// function callUpdatedHooks (queue) {
+//     let i = queue.length;
+//     while (i--) {
+//         const watcher = queue[i];
+//         const vm = watcher.vm;
+//         if (vm._watcher === watcher && vm._isMounted) {
+//             callHook(vm, 'updated');
+//         }
+//     }
+// }
+// /**
+//  * Queue a kept-alive component that was activated during patch.
+//  * The queue will be processed after the entire tree has been patched.
+//  * 翻译:
+//  * 在更新过程中将一个 kept-alive 组件保存到队列中.
+//  * 这个队列将会在整个树都被更新完后执行.
+//  * @param vm {Component}
+//  */
+// export function queueActivatedComponent (vm) {
+//     // setting _inactive to false here so that a render function can
+//     // rely on checking whether it's in an inactive tree (e.g. router-view)
+//     vm._inactive = false;
+//     activatedChildren.push(vm);
+// }
+// /**
+//  * 执行 activated 钩子
+//  * @param queue
+//  */
+// function callActivatedHooks (queue) {
+//     for (let i = 0; i < queue.length; i++) {
+//         queue[i]._inactive = true;
+//         activateChildComponent(queue[i], true /* true */);
+//     }
+// }
 
 /**
  * Flush both queues and run the watchers.
@@ -91,10 +134,11 @@ function flushSchedulerQueue () {
         // 在 dev 环境, 校验并且停止循环更新
         // ??? 这个到底是干啥的
         // 如果当前的这个 id 不在标记内
+        //@EDITED 把运行环境判断删掉了
         if (has[id] != null) {
             // 给循环引用标记 +1
             circular[id] = (circular[id] || 0) + 1;
-            // 如果更新数量超限了, 就直接警告
+            // 如果更新数量超限了, 就直接警告, 然后跳出循环执行 watcher 流程(意思是有人可能在 watcher 里添加 watcher?)
             if (circular[id] > MAX_UPDATE_COUNT) {
                 console.warn(
                     'You may have an infinite update loop ' + (
@@ -110,18 +154,24 @@ function flushSchedulerQueue () {
     }
 
     // keep copies of post queues before resetting state
-    const activatedQueue = activatedChildren.slice()
-    const updatedQueue = queue.slice()
+    // 翻译:
+    // 在重置标记的状态之前保存一份队列的备份
+    //@EDITED 下面的调用都删掉了, 那这里直接删掉应该没问题
+    // const activatedQueue = activatedChildren.slice();
+    // const updatedQueue = queue.slice();
 
-    resetSchedulerState()
+    resetSchedulerState();
 
     // call component updated and activated hooks
-    callActivatedHooks(activatedQueue)
-    callUpdatedHooks(updatedQueue)
+    // 调用组件更新钩子
+    //@EDITED 因为我这里又没有组件, 所以应该是用不到了, 删掉
+    // callActivatedHooks(activatedQueue);
+    // callUpdatedHooks(updatedQueue);
 
     // devtool hook
+    //@EDITED 这个地方本来是在非 dev 环境关掉了 devtools 的, 我这里直接忽略掉判断, 全部开起来了
     /* istanbul ignore if */
-    if (devtools && config.devtools) {
+    if (devtools) {
         devtools.emit('flush')
     }
 }

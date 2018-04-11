@@ -1,11 +1,12 @@
 import {
     def,
     hasOwn,
-    isObject,
     arrayKeys,
     arrayMethods,
     isPlainObject,
 } from '../js/util.js';
+
+import {isObject,} from './util.js';
 
 import {hasProto,} from "./env.js";
 

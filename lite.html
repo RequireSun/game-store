@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script type="module" src="js-lite/watcher.js"></script>
+<script type="module">
+    import Watcher from './js-lite/watcher.js';
+    import {Observer} from './js-lite/observer.js';
+
+    class DataStore extends Observer {
+        constructor(value) {
+            const data = {};
+            if (value) {
+                Object.assign(data, value);
+            }
+
+            super(data);
+
+            // 为了满足 watcher 的需求
+            Object.defineProperty(this, '_watchers', {
+                configurable: false,    // 不可重定义
+                enumerable: false,      // 不可被遍历
+                writable: true,         // 可修改?
+                value: [],
+            });
+
+            Object.defineProperty(this, '_data', {
+                configurable: false,    // 不可重定义
+                enumerable: false,      // 不可被遍历
+                writable: true,         // 可修改?
+                value: data,
+            });
+
+            // 数据代理
+            // 实现 vm.xxx -> vm._data.xxx
+            Object.keys(data).forEach(key => this._proxyData(key));
+        }
+
+        _proxyData (key, setter, getter) {
+            setter = setter ||
+                Object.defineProperty(this, key, {
+                    configurable: false,
+                    enumerable: true,
+                    get() {
+                        return this._data[key];
+                    },
+                    set(newVal) {
+                        this._data[key] = newVal;
+                    },
+                });
+        }
+
+        watch(key, cb) {
+            new Watcher(this, key, cb, {
+                user: true,
+                deep: true,
+            });
+        }
+    }
+
+    var ds = new DataStore('a', (...args) => {console.log(...args);});
+
+    console.log(ds);
+
+    window.ds = ds;
+</script>
+</body>
+</html>

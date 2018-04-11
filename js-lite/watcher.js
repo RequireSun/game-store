@@ -101,31 +101,29 @@ export default class Watcher {
      * @param vm {*}
      * @param expOrFn {string|Function}
      * @param cb {Function}
-     * @param options {?Object}
-     * @param isRenderWatcher {?boolean}
+     * @param options {Object?}
+     * @edited sync 不知道到底干啥, 删掉了
+     * @edited computed 肯定没有, 之间删掉了
+     * @edited dirty 因为是通过 computed 计算出来的, 所以删掉了
+     * @edited isRenderWatcher 这个的作用找不出来, 先干掉了
+     * @todo 要不要把 computed 做出来, 这个代价有点大
      */
-    constructor(vm, expOrFn, cb, options, isRenderWatcher) {
+    constructor(vm, expOrFn, cb, options) {
         this.vm = vm;
-        if (isRenderWatcher) {
-            // 应该是跟 render 相关的, render 的 watcher 就需要保存到 vm 上防止走丢
-            vm._watcher = this;
-        }
         vm._watchers.push(this);
-        // 这一大堆我感觉可能需要删除一部分
+
         // options
         if(options) {
+            //TODO 看看 user 需要不需要删掉
             this.deep = !!options.deep;
             this.user = !!options.user;
-            this.computed = !!options.computed;
-            this.sync = !!options.sync;
             this.before = options.before;
         } else {
-            this.deep = this.user = this.computed = this.sync = false
+            this.deep = this.user = false;
         }
         this.cb = cb;
         this.id = ++uid; // uid for batching
         this.active = true;
-        this.dirty = this.computed; // for computed watchers
         this.deps = [];
         this.newDeps = [];
         this.depIds = new Set();
@@ -185,6 +183,7 @@ export default class Watcher {
             if (this.deep) {
                 traverse(value);
             }
+            // 上面读不懂的主要原因是下面这里也没接住 pop 出来的 target 啊
             popTarget();
             this.cleanupDeps();
         }
