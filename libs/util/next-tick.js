@@ -1,8 +1,8 @@
 /* @flow */
 /* globals MessageChannel */
 
-import { noop, handleError } from './util/index.js';
-import { isIOS, isNative } from './util/env.js';
+import { noop, handleError } from './index.js';
+import { isIOS, isNative } from './env.js';
 
 const callbacks = [];
 let pending = false;

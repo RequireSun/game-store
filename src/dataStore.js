@@ -34,16 +34,31 @@ export default class DataStore {
     }
 
     _proxyData (key, setter, getter) {
+        const get = function () {
+            return this._data[key];
+        };
+
+        const set = function (newVal) {
+            this._data[key] = newVal;
+        };
+
+        Object.defineProperty(set, '_vmOb', {
+            enumerable: false,
+            value: true,
+        });
+
+        Object.defineProperty(get, '_vmOb', {
+            enumerable: false,
+            value: true,
+        });
+
+        // 不知道 vue 这里这个诡异的写法从何而来
         setter = setter ||
             Object.defineProperty(this, key, {
                 configurable: false,
                 enumerable: true,
-                get() {
-                    return this._data[key];
-                },
-                set(newVal) {
-                    this._data[key] = newVal;
-                },
+                get,
+                set,
             });
     }
 
@@ -106,7 +121,10 @@ export default class DataStore {
             setInPath(this._data, path, value);
             // 如果是直接定义到了 ds 上的属性, 要记得重新 proxy 一下
             if (1 === segments.length) {
-                this._proxyData(segments[0]);
+                const property = Object.getOwnPropertyDescriptor(this, segments[0]);
+                if (!property || !property.get || !property.get._vmOb || !property.set || !property.set._vmOb) {
+                    this._proxyData(segments[0]);
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 /**
  * Created by kelvinsun on 18/4/10.
  */
-import {nextTick,} from './next-tick.js';
+import {nextTick,} from './util/next-tick.js';
 import {devtools,} from './util/env.js';
 
 export const MAX_UPDATE_COUNT = 100;

@@ -29,10 +29,47 @@ ds.watch('d', (val, oldVal) => console.log('d', val, oldVal));          // 分�
 
 ds.a = 2;       // 'a' 2 1
 ds.b = 2;       // 不会触发
-ds.obj.c = 2;   // 'obj' [...] {...} => 'obj.c' 3 2
-ds.obj = [];    // 这次赋值导致的上方的 obj 监听中的 newVal 变成了数组
+ds.obj.c = 2;   // 'obj' [1, ..] {...} => 'obj.c' 3 2
+ds.obj = [];    // 这次赋值导致的上方的 obj 监听中的 newVal 变成了数组, c 因为父元素被覆盖了, 所以自己也变成了 undfined
 ds.d = 2;       // 不会触发
 ds.setIn('d', 2);   // 'd' 2 undefined (上面那一次赋值就当没看到了)
-ds.obj.push(1);
+ds.obj.push(1); // 这一步导致了上面的 obj.c 那一步中的数组中有了元素
 
+setTimeout(() => {
+    console.log('========== 1000ms ==========');
+    // 如果一开始传了 deep, 那么这里还会触发 obj.c 的 watcher
+    ds.obj.push(2); // 因为数组被修改过了, 所以 oldVal 和 newVal 就一样了
+    ds.obj.push(3);
+    ds.obj.push(4);
+    ds.obj.push(5);
+
+    // 一个属性存在两个 watcher 的情况 & 动态插入 watcher 的情况
+    ds.watch('obj', (...args) => console.log('obj 2', ...args));        // 因为声明的晚, 所以会在下次改变时执行
+    ds.watch('obj.c', (...args) => console.log('obj.c 2', ...args));
+}, 1000);
+
+setTimeout(() => {
+    console.log('========== 2000ms ==========');
+    ds.obj.sort((a, b) => b - a);   // sort 因为也是在修改数据, 所以也会触发变化, 而且因为做了合并, 只会输出最后的结果
+}, 2000);
+
+setTimeout(() => {
+    console.log('========== 3000ms ==========');
+    ds.e = 1;
+    ds.watch('e', (...args) => console.log('e', ...args));
+    ds.e = 2;   // 初始化的时候没有定义的变量是不会监听成功的
+    ds.setIn('e', 10);
+}, 3000);
 ```
+
+# Update log
+
+## 2018/04/12 16:40
+
+1. 修复了重复创建根节点时 proxyData 重复创建的问题
+1. 修改了示例代码, 删掉了原来的 index
+
+## 2018/04/12 16:30
+
+1. 改掉了错误使用的 deep 参数
+1. 解决了数组不监听的问题
