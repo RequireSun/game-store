@@ -12,7 +12,7 @@ __注意:__
 
 # How to use
 
-```
+```javascript
 import DataSource from './src/dataStore.js';
 
 const ds = new DataSource({
@@ -72,7 +72,7 @@ setTimeout(() => {
    数据 store 对象, 初始化请直接 new 该对象.
    参数就是想要当作监听数据的对象(请尽量将其结构补充完整).
 
-   ```
+   ```javascript
 new DataStore(...yourData);
    ```
 
@@ -80,7 +80,7 @@ new DataStore(...yourData);
    监听函数, 用于监听数据变化并作出相应反应.
    同一时刻多次修改同一数据将只会触发一次 watch 的回调.
 
-   ```
+   ```javascript
 ds.watch('xxx.xx', (val, oldVal) => {});
    ```
 
@@ -88,7 +88,7 @@ ds.watch('xxx.xx', (val, oldVal) => {});
    如果一个属性在初始化时并没有声明, 那么 watch 函数是监听不到的.
    此时就需要使用 setIn 函数来将新生命的属性挂到树上.
 
-   ```
+   ```javascript
 // 设置了 xxx.xx 的值并且使得它可以被 watch
 ds.setIn('xxx.xx', 1);
    ```
