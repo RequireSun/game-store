@@ -3,13 +3,14 @@ import {
     hasOwn,
     isObject,
     isPlainObject,
-    arrayKeys,
     arrayMethods,
-} from './util.js';
+} from './util/index.js';
 
-import {hasProto,} from "./env.js";
+import {hasProto,} from "./util/env.js";
 
 import Dep from './dep.js';
+
+const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
 
 /**
  * Observer class that is attached to each observed

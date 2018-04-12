@@ -1,6 +1,6 @@
 import Watcher from '../libs/watcher.js';
 import {observe,} from '../libs/observer.js';
-import {isObject,setInPath,getParentPath,} from '../libs/util.js';
+import {isObject,setInPath,getParentPath,} from '../libs/util/index.js';
 
 /**
  * @warn 各种处理的时候一定要记得用 this._data 而不是 this, 否则容易出神奇的问题
@@ -50,7 +50,7 @@ export default class DataStore {
     watch(key, cb) {
         new Watcher(this._data, key, cb, {
             user: true,
-            deep: true,
+            // deep: true,
         });
     }
 

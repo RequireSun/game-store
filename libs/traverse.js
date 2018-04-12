@@ -3,8 +3,8 @@
  * 这个文件就是用来深度遍历对象 / 数组的
  */
 
-import {isObject} from './util.js';
-import {_Set as Set, } from './env.js';
+import {isObject} from './util/index.js';
+import {_Set as Set, } from './util/env.js';
 // import { SimpleSet } from '../util/index'
 
 const seenObjects = new Set();

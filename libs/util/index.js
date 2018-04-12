@@ -2,6 +2,8 @@
  * Created by kelvinsun on 18/4/10.
  */
 
+export * from './array.js';
+
 /**
  * Perform no operation.
  * Stubbing args to make Flow happy without leaving useless transpiled code
@@ -15,10 +17,6 @@
  * @param c {?*}
  */
 export function noop (a, b, c) {}
-
-const arrayProto = Array.prototype;
-export const arrayMethods = Object.create(arrayProto);
-export const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
 
 /**
  * Remove an item from an array

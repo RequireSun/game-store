@@ -5,7 +5,7 @@ import {
     isObject,
     parsePath,
     handleError,
-} from './util.js';
+} from './util/index.js';
 
 import Dep, {pushTarget, popTarget} from './dep.js';
 
@@ -37,6 +37,8 @@ export default class Watcher {
     //  */
     // id;
     // /**
+    //  * 这个的作用原理没有探究出来
+    //  * 好象是传了这个值的话父元素有了改变会调用深层的 watcher
     //  * @type {boolean}
     //  */
     // deep;
