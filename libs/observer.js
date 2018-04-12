@@ -98,6 +98,7 @@ export class Observer {
 
             for (let i = 0; i < keys.length; i++) {
                 const property = Object.getOwnPropertyDescriptor(value, keys[i]);
+                // 只有对象上的 get 和 set 函数不是监控器搞上去的的时候才会去添加新的监控
                 if (
                     !property ||
                     !property.get || !property.get._isOb ||
@@ -151,9 +152,9 @@ function copyAugment(target, src, keys) {
 function dependArray(value) {
     for (let e, i = 0, l = value.length; i < l; i++) {
         e = value[i];
-        e && e.__ob__ && e.__ob__.dep.depend();
+        e && e.__ob__ && e.__ob__.dep.depend(); // 这里是去重新执行了一下当前元素的添加到依赖函数
         if (Array.isArray(e)) {
-            // 如果当前元素还是对象, 那么递归依赖
+            // 如果当前元素还是数组, 那么递归依赖
             dependArray(e);
         }
     }
@@ -208,7 +209,7 @@ export function defineReactive(obj, key, val, customSetter, shallow) {
                 }
             }
         }
-        return value
+        return value;
     };
 
     const reactiveSetter = function (newVal) {
@@ -243,6 +244,7 @@ export function defineReactive(obj, key, val, customSetter, shallow) {
         value: true,
     });
     // 偷偷的把 dep 放到 setter 上, 这样在外面就可以呼起了
+    // 而且这样 dep 也是跟对应属性的 setter 做了绑定, 对应属性的 setter 没了, dep 也会跟着回收, 不会出现内存泄露
     Object.defineProperty(reactiveSetter, '_dep', {
         enumerable: false,
         value: dep,
@@ -289,7 +291,6 @@ export function observe(value, asRootData) {
         // 进行监听并返回
         ob = new Observer(value);
     }
-    //TODO 这个值还没找到传的地方
     // 如果我没猜错的话, 这个是用来区分不同 vm 根树的?
     if (asRootData && ob) {
         ob.vmCount++;

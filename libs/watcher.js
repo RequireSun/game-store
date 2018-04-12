@@ -1,6 +1,7 @@
 /* @flow */
 
 import {
+    remove,
     isObject,
     parsePath,
     handleError,
@@ -17,11 +18,11 @@ let uid = 0;
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
+ * 翻译:
+ * watcher 解析表达式, 收集依赖, 并且当表达式的值发生变化的时候调用回调.
+ * $watch() API 和指令都是用的这个.
  */
 export default class Watcher {
-    // /**
-    //  * @todo 这个部分可能还是需要保留
-    //  */
     // vm;
     // /**
     //  * @type {string}
@@ -45,14 +46,6 @@ export default class Watcher {
     //  * @type {boolean}
     //  */
     // user;
-    // /**
-    //  * @type {boolean}
-    //  */
-    // computed;
-    // /**
-    //  * @type {boolean}
-    //  */
-    // sync;
     // /**
     //  * @type {boolean}
     //  */
@@ -265,6 +258,7 @@ export default class Watcher {
     }
 
     /**
+     * 执行 watcher 的 cb
      * @param cb {Function}
      */
     getAndInvoke(cb) {
@@ -302,6 +296,9 @@ export default class Watcher {
     /**
      * Evaluate and return the value of the watcher.
      * This only gets called for computed property watchers.
+     * 翻译:
+     * 计算 watcher 的值.
+     * 只应该被 computed 属性的 watcher 调用.
      */
     evaluate() {
         if (this.dirty) {
@@ -313,6 +310,8 @@ export default class Watcher {
 
     /**
      * Depend on this watcher. Only for computed property watchers.
+     * 翻译:
+     * 依赖本 watcher. 只应该被 computed 属性的 watcher 调用.
      */
     depend() {
         if (this.dep && Dep.target) {
@@ -322,6 +321,10 @@ export default class Watcher {
 
     /**
      * Remove self from all dependencies' subscriber list.
+     * 翻译:
+     * 把自己从所有的监听者中移除掉
+     *
+     * @desc 但我的 vm 树就是根, 如果根没了, 整个逻辑应该也就都结束了
      */
     teardown() {
         if (this.active) {
