@@ -3,6 +3,8 @@
 
 主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.
 
+编写参考: [https://segmentfault.com/a/1190000006599500](https://segmentfault.com/a/1190000006599500)
+
 __注意:__
 
 1. 请不要直接使用 idea 的使用 chrome 快捷预览页面的功能, 这个功能不支持 es6 的 import, 直接本地 anywhere 起一个静态文件服务器会好用一些.
