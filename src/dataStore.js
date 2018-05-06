@@ -1,12 +1,17 @@
 import Watcher from '../libs/watcher.js';
 import {observe,} from '../libs/observer.js';
 import {isObject,setInPath,getParentPath,} from '../libs/util/index.js';
+import {hasOwn} from '../libs/util/index.js';
 
 /**
  * @warn 各种处理的时候一定要记得用 this._data 而不是 this, 否则容易出神奇的问题
  */
 export default class DataStore {
-    constructor(value) {
+    constructor(options) {
+        const value = options.state;
+        const mutations = options.mutations;
+        //TODO module
+
         const data = {};
         if (value) {
             Object.assign(data, value);
@@ -31,6 +36,13 @@ export default class DataStore {
         // 数据代理
         // 实现 vm.xxx -> vm._data.xxx
         Object.keys(data).forEach(key => this._proxyData(key));
+
+        Object.defineProperty(this, '_mutations', {
+            configurable: false,
+            enumerable: false,
+            writable: true,
+            value: mutations,
+        });
     }
 
     _proxyData (key, setter, getter) {
@@ -126,6 +138,24 @@ export default class DataStore {
                     this._proxyData(segments[0]);
                 }
             }
+        }
+    }
+
+    commit(type, payload) {
+        if ('string' === typeof(type)) {
+            // 不处理
+        } else {
+            payload = type.payload;
+            type = type.type;
+        }
+
+        if (this._mutations && hasOwn(this._mutations, type) &&
+            'function' === typeof(this._mutations[type])
+        ) {
+            this._mutations[type](this, {
+                type,
+                payload,
+            });
         }
     }
 }
