@@ -343,5 +343,34 @@ export default class Watcher {
             this.active = false;
         }
     }
+}
 
+
+/**
+ * watcher 的代理壳
+ * 因为在 dataStore 实例中, 对子 module 的监听是直接交给了子 module 进行的,
+ * 因而父层失去了对子层 watcher 的控制权, 在重建监听层时也无法触及到这里,
+ * 所以需要建立一个代理壳, 在当前实例上接收子 module 传来的 watcher 示例,
+ * 并代理对它的一些主要外部操作 (expression 判断 / value 赋值 / get 调用),
+ * 这样在父层上有什么操作就一定会因为遍历到了这个假的 watcher 从而传递到内部.
+ */
+export class WatcherShell {
+    constructor(vm, expOrFn, target) {
+        vm._watchers.push(this);
+        this.expression = expOrFn.toString();
+        this.target = target;
+
+        Object.defineProperty(this, 'value', {
+            get: () => {
+                return target.value;
+            },
+            set: newVal => {
+                target.value = newVal;
+            },
+        });
+    }
+
+    get() {
+        return this.target.get();
+    }
 }

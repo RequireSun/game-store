@@ -19,4 +19,11 @@ export default () => new DataSource({
             state.a += (action.payload || 0);
         },
     },
+    modules: {
+        innerModule: {
+            state: {
+                a: 7,
+            },
+        },
+    },
 });

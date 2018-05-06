@@ -87,6 +87,10 @@ export class Observer {
         }
     }
 
+    /**
+     * 这个函数应该是我自己加的吧...
+     * 作用就是重新建立(补齐)当前实例的监听树()
+     */
     supplement() {
         const value = this.value;
         // 因为这个对象一定是之前处理过了的, 所以就不往上面强化东西了

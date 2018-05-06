@@ -36,7 +36,7 @@
         ds.a = 2;       // 'a' 2 1
         ds.b = 2;       // 不会触发
         ds.obj.c = 2;   // 'obj' [1, ..] {...} => 'obj.c' 3 2
-        ds.obj = [];    // 这次赋值导致的上方的 obj 监听中的 newVal 变成了数组, c 因为父元素被覆盖了, 所以自己也变成了 undfined
+        ds.obj = [];    // 这次赋值导致的上方的 obj 监听中的 newVal 变成了数组, c 因为父元素被覆盖了, 所以自己也变成了 undefined
         ds.d = 2;       // 不会触发
         ds.setIn('d', 2);   // 'd' 2 undefined (上面那一次赋值就当没看到了)
         ds.obj.push(1); // 这一步导致了上面的 obj.c 那一步中的数组中有了元素
@@ -99,6 +99,19 @@
         console.log('========== START action 测试 ==========');
 
         actions.incrementA();
+    });
+
+    promise = promise.then(() => {
+        console.log('========== START inner module 测试 ==========');
+
+        console.log('innerModule.a current:', ds.innerModule.a);
+
+        ds.watch('innerModule.a', (val, oldVal) => console.log('innerModule.a', val, oldVal));
+        ds.watch('innerModule.b', (val, oldVal) => console.log('innerModule.b', val, oldVal));
+
+        ds.innerModule.a = 0;   // 被监听到了
+        ds.innerModule.b = 1;   // 这句应该没用
+        ds.setIn('innerModule.b', 2);       // 这句会监听到 innerModule.b 2 undefined
     });
 
 </script>
