@@ -114,6 +114,28 @@
         ds.setIn('innerModule.b', 2);       // 这句会监听到 innerModule.b 2 undefined
     });
 
+    promise = promise.then(() => {
+        console.log('========== START register module 测试 ==========');
+
+        ds.registerModule('innerModule_2', {
+            state: {
+                a: 1,
+            },
+        });
+
+        ds.watch('innerModule_2.a', (val, oldVal) => console.log('innerModule_2.a', val, oldVal));
+
+        ds.innerModule_2.a = 0;   // 应该会被监听到
+
+        ds.watch('innerModule_3.a', (val, oldVal) => console.log('innerModule_3.a', val, oldVal));
+
+        ds.registerModule('innerModule_3', {
+            state: {
+                a: 1,
+            },
+        });
+    });
+
 </script>
 </body>
 </html>

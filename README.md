@@ -267,6 +267,10 @@ export default () => createActions({
       
 # Update log
 
+## 2018/05/07 04:52
+
+1. 实现了多 module 功能, 只是时间太紧, 没有来得及写文档 & 实现 action
+
 ## 2018/05/07 01:16
 
 1. 添加了 action 的使用

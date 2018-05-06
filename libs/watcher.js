@@ -333,6 +333,9 @@ export default class Watcher {
             // remove self from vm's watcher list
             // this is a somewhat expensive operation so we skip it
             // if the vm is being destroyed.
+            // 翻译:
+            // 把自己从 vm 的 watcher 列表中移除
+            // 如果 vm 已经被销毁了, 那么这个操作就有点多余了, 那就直接跳过
             if (!this.vm._isBeingDestroyed) {
                 remove(this.vm._watchers, this);
             }
@@ -372,5 +375,13 @@ export class WatcherShell {
 
     get() {
         return this.target.get();
+    }
+
+    teardown() {
+        return this.target.teardown();
+    }
+
+    run() {
+        return this.target.run();
     }
 }

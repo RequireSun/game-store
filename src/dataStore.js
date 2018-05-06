@@ -1,7 +1,8 @@
 import Watcher, {WatcherShell,} from '../libs/watcher.js';
 import {observe,} from '../libs/observer.js';
 import {isObject,setInPath,getParentPath,getInnerModulePath,} from '../libs/util/index.js';
-import {hasOwn} from '../libs/util/index.js';
+import {hasOwn,} from '../libs/util/index.js';
+import {nextTick,} from '../libs/util/next-tick.js';
 
 /**
  * @todo 动态插入 module 功能
@@ -46,25 +47,8 @@ export default class DataStore {
         // 这个地方直接全都 false 了, 真重名了的话调用方自己反省
         Object.keys(modules).forEach(key => {
             const ds = new DataStore(modules[key]);
-            // 生气了, 直接把值定到 _data 里面去
-            // 但是按理来说这里不应该这么做的,
-            // 毕竟这算是 dataStore 的事情, 不应该扯到数据上去的
-            Object.defineProperty(this._data, key, {
-                configurable: false,
-                enumerable: false,
-                writable: false,
-                value: ds,
-            });
 
-            this._proxyData(key);
-
-            // 标记这个是个 module
-            Object.defineProperty(ds, '_isModule', {
-                configurable: false,
-                enumerable: false,
-                writable: false,
-                value: true,
-            });
+            this._registerModule(this, ds, key);
         });
     }
 
@@ -101,6 +85,7 @@ export default class DataStore {
         // 去掉第一个点之后的部分
         const firstPart = key.replace(/\..*/, '');
 
+        //TODO 好像这个地方的思路对一点, 不可能存在 state 里面套 module 的状况吧?
         if (this[firstPart] && this[firstPart]._isModule) {
             // 如果第一个点之前的部分代表了一个 module
             // 那就去掉本层的名字之后让这个 module 自己去监听
@@ -144,13 +129,7 @@ export default class DataStore {
             // undefined 就是这个值原来的值, 要不然监听函数里面的 oldVal 就是一个错误的值了
             if (!parent[segments[segments.length - 1]]) {
                 parent[segments[segments.length - 1]] = undefined;
-            }/* else if (parent._isModule && !parent._data[segments[segments.length - 1]]) {
-                // 如果当前父是 module 的话
-                // 如果 _data 上目标值不存在, 应该往 _data 上面赋值, 并清空当前没用那个值
-                // (也就是说之前直接赋值上去的东西都是狗屁)
-                parent[segments[segments.length - 1]] = undefined;
-                parent._data[segments[segments.length - 1]] = undefined;
-            }*/
+            }
             // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
             let target = this._data;
             for (let i = 0; i < segments.length - 1 && target && target.__ob__; ++i) {
@@ -228,43 +207,82 @@ export default class DataStore {
     }
 
     registerModule(path, config) {
-        var target = this;
-        var moduleName = '';
-
-        if (Array.isArray(path)) {
-            // 注意, 这里是到父层为止
-            for (let i = 0, l = path.length; i < l - 1; ++i) {
-                target = target[path[i]];
-                moduleName = path[i + 1];
-                if (!target._isModule) {
-                    // 应该报错
-                    throw new Error('新 module 只能声明在 module 上!');
-                }
+        if (Array.isArray(path) && 1 < path.length) {
+            // 如果下一个人存在, 那就交给下一个人去做
+            if (this[path[0]] && this[path[0]]._isModule) {
+                this[path[0]].registerModule(path.slice(1), config);
+            } else {
+                // 应该报错
+                throw new Error('新 module 只能声明在 module 上!');
             }
-        } else if ('string' === typeof(path)) {
-            moduleName = path;
+        } else if ('string' === typeof(path) || (Array.isArray(path) && 1 === path.length)) {
+            // 如果 path 长度只有 1 那么应该也就是在自己上面玩了
+            if (Array.isArray(path)) {
+                path = path[0];
+            }
+
+            if (this[path] && this[path]._isModule) {
+                throw new Error('请不要重复定义 module');
+            }
+
+            const ds = new DataStore(config);
+
+            this._registerModule(this, ds, path);
         } else {
             throw new Error('path 只可以是字符串或数组');
         }
 
-        const ds = new DataStore(config);
-        // 从上面抄下来的
-        Object.defineProperty(target._data, moduleName, {
-            configurable: false,
-            enumerable: false,
-            writable: false,
-            value: ds,
-        });
+        // 当前新注册的 module 的路径
+        // path 是数组的情况只存在于还有好多嵌套的情况下
+        const pathString = Array.isArray(path) ? path.join('.') : path;
 
-        target._proxyData(moduleName);
+        if (this._data && Array.isArray(this._data._watchers)) {
+            // 因为下面可能 teardown, 所以先复制一份为妙
+            const watchers = this._data._watchers.slice();
+            for (let i = 0; i < watchers.length; ++i) {
+                const item = watchers[i];
+                // 这个地方的 set 导致了只要调用了 setIn, 就会让 watcher 的参数出错的问题
+                // 所以这个地方需要根据 path 对 watcher 的 expression 对比, 如果对应上了, 再去重做
+                //TODO 这个地方重点观察, 我把它的 indexOf 的调用和被调用关系对调过来了
+                //TODO 因为现在情况是可能一开始监听了一个属性, 后来这个属性被 module 覆盖了, 那么应该也要触发 cb 的
+                //TODO 此时 pathString === module 路径, item.expression > pathString
+                if (0 === item.expression.indexOf(pathString)) {
+                    // 如果已经有监听这个东西的 watcher 了, 那么就要去删除并重建
+                    // 上面已经通过 throw error 消灭了重复定义 module 的情况了, 所以直接搞 watcher 应该没问题
+                    const key = item.expression;
+                    const cb = item.cb;
+                    item.teardown();
+                    const watcher = this.watch(key, cb);
+                    // 试试能不能通过黑科技来触发 cb
+                    //TODO 这里手动使用了 nextTick, 不一定稳妥, 需要再次 review
+                    nextTick(() => {
+                        watcher.value = undefined;
+                        watcher.run();
+                    });
+                }
+            }
+        }
+    }
 
+    _registerModule(vm, module, moduleName) {
         // 标记这个是个 module
-        Object.defineProperty(ds, '_isModule', {
+        Object.defineProperty(module, '_isModule', {
             configurable: false,
             enumerable: false,
             writable: false,
             value: true,
         });
-        // 声明的问题是解决了, 但目前还没有挂到树上
+
+        // 生气了, 直接把值定到 _data 里面去
+        // 但是按理来说这里不应该这么做的,
+        // 毕竟这算是 dataStore 的事情, 不应该扯到数据上去的
+        Object.defineProperty(vm._data, moduleName, {
+            configurable: false,
+            enumerable: false,
+            writable: false,
+            value: module,
+        });
+
+        vm._proxyData(moduleName);
     }
 }
