@@ -1,0 +1,24 @@
+{
+  "name": "game-store",
+  "version": "0.2.1",
+  "description": "主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RequireSun/game-store.git"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/RequireSun/game-store/issues"
+  },
+  "homepage": "https://github.com/RequireSun/game-store#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "redux-actions": "^2.3.2",
+    "vue-own-redux": "^0.2.0"
+  }
+}

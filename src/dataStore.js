@@ -158,4 +158,8 @@ export default class DataStore {
             });
         }
     }
+
+    dispatch(...args) {
+        this.commit(...args);
+    }
 }

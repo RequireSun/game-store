@@ -14,29 +14,19 @@ __注意:__
 
 # How to use
 
+index.js 文件
+
 ```javascript
+import createStore from './js/store.js';
+import createActions from './js/actions.js';
+import bindActions from '../node_modules/vue-own-redux/bindActions.js';
 
-import DataSource from './index.js';
+const ds = createStore();
 
-const ds = new DataSource({
-    state: {
-        a: 1,
-        b: 2,
-        obj: {
-            c: 3,
-        },
-    },
-    mutations: {
-        incrementA (state) {
-            ++state.a;
-        },
-        addA (state, action) {
-            state.a += (action.payload || 0);
-        },
-    },
-});
+const actions = bindActions(ds, createActions());
 
 window.ds = ds;
+window.actions = actions;
 
 var promise = Promise.resolve();
 
@@ -105,15 +95,65 @@ promise = promise.then(() => {
 promise = promise.then(() => {
     console.log('========== START mutation 测试 ==========');
 
-    ds.commit('addA', 1);
-    
+    ds.commit('ADD_A', 1);
+
     ds.commit({
-        type: 'addA',
+        type: 'ADD_A',
         payload: 2,
     });
 });
 
+promise = promise.then(() => {
+    console.log('========== START action 测试 ==========');
+
+    actions.incrementA();
+});
+    
 ```
+
+store.js 文件
+
+```javascript
+
+import DataSource from '../../index.js';
+import {INCREMENT_A,ADD_A,} from './actions.js';
+
+export default () => new DataSource({
+    state: {
+        a: 1,
+        b: 2,
+        obj: {
+            c: 3,
+        },
+    },
+    mutations: {
+        [INCREMENT_A] (state) {
+            ++state.a;
+        },
+        [ADD_A] (state, action) {
+            state.a += (action.payload || 0);
+        },
+    },
+});
+
+```
+
+actions.js 文件
+
+```javascript
+
+const createActions = window.ReduxActions.createActions;
+
+export const INCREMENT_A = 'INCREMENT_A';
+export const ADD_A = 'ADD_A';
+
+export default () => createActions({
+    [INCREMENT_A]: info => info,
+    [ADD_A]: info => info,
+});
+
+```
+
 
 # API
 
@@ -168,7 +208,8 @@ promise = promise.then(() => {
       目前还没有限制
       
    1. 调用
-      通过在 store 的实例上调用 commit 函数来触发这些变换过程.
+      通过在 `store` 的实例上调用 `commit` 函数来触发这些变换过程.
+      `commit` 还有一个别名叫 `dispatch`.
       
       ```javascript
       // 方式 1
@@ -179,8 +220,56 @@ promise = promise.then(() => {
           payload: 1,
       });
       ```
+  
+1. actions 
+   本模块使用 `redux-actions` 库生成的 `actions`.
+   本模块使用 `vue-own-redux` 模块中的 `bindActions` 方法将 `redux-actions` 库生成的 `actions` 绑定到当前 `store` 上.
+   
+   创建 action:
+   ```javascript
+   import {createActions,} from 'redux-actions';
+
+   const ACTION_A = 'ACTION_A';
+
+   export default () => createActions({
+       [ACTION_A]: info => info,
+   });
+   ```
+   
+   store 的处理:
+   ```javascript
+   import {ACTION_A,} from './action.js';
+   
+   export default () => new DataStore({
+       state: {}, 
+       mutations: {
+           [ACTION_A] (state, action) {
+               state.x += action.payload; 
+           }, 
+       },
+   });
+   ```
+   
+   生成和绑定:
+   ```javascript
+   import bindActions from 'vue-own-redux/bindActions.js';
+   import createStore from './store.js';
+   import createAction from './action.js';
+
+   const store = createStore();
+   const actions = bindActions(store, createAction());
+   ```
+   
+   调用 action:
+   ```javascript
+   actions.actionA(2);
+   ```
       
 # Update log
+
+## 2018/05/07 01:16
+
+1. 添加了 action 的使用
 
 ## 2018/05/06 19:08
 

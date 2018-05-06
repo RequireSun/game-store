@@ -5,28 +5,20 @@
     <title>Title</title>
 </head>
 <body>
-<script type="module">
-    import DataSource from './index.js';
+<!-- 因为 chrome 不支持 import 的时候不带 .js 所以只能通过这种恶心的方式来使用了 -->
+<script src="../node_modules/redux-actions/dist/redux-actions.js"></script>
 
-    const ds = new DataSource({
-        state: {
-            a: 1,
-            b: 2,
-            obj: {
-                c: 3,
-            },
-        },
-        mutations: {
-            incrementA (state) {
-                ++state.a;
-            },
-            addA (state, action) {
-                state.a += (action.payload || 0);
-            },
-        },
-    });
+<script type="module">
+    import createStore from './js/store.js';
+    import createActions from './js/actions.js';
+    import bindActions from '../node_modules/vue-own-redux/bindActions.js';
+
+    const ds = createStore();
+
+    const actions = bindActions(ds, createActions());
 
     window.ds = ds;
+    window.actions = actions;
 
     var promise = Promise.resolve();
 
@@ -95,15 +87,19 @@
     promise = promise.then(() => {
         console.log('========== START mutation 测试 ==========');
 
-        ds.commit('addA', 1);
+        ds.commit('ADD_A', 1);
 
         ds.commit({
-            type: 'addA',
+            type: 'ADD_A',
             payload: 2,
         });
     });
 
+    promise = promise.then(() => {
+        console.log('========== START action 测试 ==========');
 
+        actions.incrementA();
+    });
 
 </script>
 </body>
