@@ -1,8 +1,8 @@
-import Watcher, {WatcherShell,} from '../libs/watcher.js';
-import {observe,} from '../libs/observer.js';
-import {isObject,setInPath,getParentPath,getInnerModulePath,} from '../libs/util/index.js';
-import {hasOwn,} from '../libs/util/index.js';
-import {nextTick,} from '../libs/util/next-tick.js';
+import Watcher, {WatcherShell,} from './core/watcher.js';
+import {observe,} from './core/observer.js';
+import {isObject,setInPath,getParentPath,getInnerModulePath,} from './core/util/index.js';
+import {hasOwn,} from './core/util/index.js';
+import {nextTick,} from './core/util/next-tick.js';
 
 /**
  * @todo 动态插入 module 功能
@@ -10,7 +10,7 @@ import {nextTick,} from '../libs/util/next-tick.js';
  * @todo 如果动态插入了一个 module, 那么之前的监听怎么办
  * @warn 各种处理的时候一定要记得用 this._data 而不是 this, 否则容易出神奇的问题
  */
-export default class DataStore {
+export default class GameStore {
     constructor({state: value, mutations, modules = {},} = {}) {
         const data = {};
         if (value) {
@@ -46,7 +46,7 @@ export default class DataStore {
 
         // 这个地方直接全都 false 了, 真重名了的话调用方自己反省
         Object.keys(modules).forEach(key => {
-            const ds = new DataStore(modules[key]);
+            const ds = new GameStore(modules[key]);
 
             this._registerModule(this, ds, key);
         });
@@ -225,7 +225,7 @@ export default class DataStore {
                 throw new Error('请不要重复定义 module');
             }
 
-            const ds = new DataStore(config);
+            const ds = new GameStore(config);
 
             this._registerModule(this, ds, path);
         } else {
@@ -275,7 +275,7 @@ export default class DataStore {
 
         // 生气了, 直接把值定到 _data 里面去
         // 但是按理来说这里不应该这么做的,
-        // 毕竟这算是 dataStore 的事情, 不应该扯到数据上去的
+        // 毕竟这算是 gameStore 的事情, 不应该扯到数据上去的
         Object.defineProperty(vm._data, moduleName, {
             configurable: false,
             enumerable: false,
