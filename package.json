@@ -4,7 +4,8 @@
   "description": "主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --mode development --config webpack.config.lib.js",
+    "dist": "webpack --mode production --config webpack.config.production.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +22,7 @@
   "devDependencies": {
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
+    "clean-webpack-plugin": "^0.1.19",
     "eslint": "^4.19.1",
     "eslint-loader": "^2.0.0",
     "eslint-plugin-html": "^4.0.3",

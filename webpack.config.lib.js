@@ -1,5 +1,6 @@
 // webpack.config.js
 const path = require('path');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const libraryName = 'game-store';
 const outputFile = libraryName + '.js';
@@ -31,6 +32,9 @@ const config = {
     resolve: {
         extensions: ['.js'],
     },
+    plugins: [
+        new CleanWebpackPlugin(['lib']),
+    ],
 };
 
 module.exports = config;

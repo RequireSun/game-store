@@ -60,3 +60,8 @@ typings/
 # idea
 .idea
 
+# build
+
+lib
+dist
+
