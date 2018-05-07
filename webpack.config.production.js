@@ -7,7 +7,6 @@ const outputFile = libraryName + '.js';
 
 const config = {
     entry: __dirname + '/src/game-store.js',
-    devtool: 'source-map',
     output: {
         path: __dirname + '/dist',
         filename: outputFile,
@@ -15,6 +14,7 @@ const config = {
         libraryTarget: 'umd',
         umdNamedDefine: true,
     },
+    devtool: 'source-map',
     module: {
         rules: [
             {

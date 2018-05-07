@@ -1,9 +1,9 @@
 'use strict';
 
-import DataSource from '../../index.js';
+import GameStore from '../../index.js';
 import {INCREMENT_A,ADD_A,} from './actions.js';
 
-export default () => new DataSource({
+export default () => new GameStore({
     state: {
         a: 1,
         b: 2,
