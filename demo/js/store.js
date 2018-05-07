@@ -24,6 +24,11 @@ export default () => new DataSource({
             state: {
                 a: 7,
             },
+            mutations: {
+                [ADD_A] (state, action) {
+                    state.a += (action.payload || 0);
+                },
+            },
         },
     },
 });

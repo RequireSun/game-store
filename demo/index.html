@@ -136,6 +136,14 @@
         });
     });
 
+    promise = promise.then(() => {
+        console.log('========== START module action 测试 ==========');
+
+        const actions = bindActions(ds.innerModule, createActions());
+
+        actions.addA(8);
+    });
+
 </script>
 </body>
 </html>

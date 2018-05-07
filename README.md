@@ -8,9 +8,28 @@
 __注意:__
 
 1. 请不要直接使用 idea 的使用 chrome 快捷预览页面的功能, 这个功能不支持 es6 的 import, 直接本地 anywhere 起一个静态文件服务器会好用一些.
+
+    示例:
+
+    在项目根目录上运行:
+
+    ```shell
+    anywhere 8899
+    ```
+
+    然后通过浏览器直接访问:
+
+    [http://127.0.0.1:8899/demo/index.html](http://127.0.0.1:8899/demo/index.html)
+
+    打开控制台看就完事了.
+
 1. 在同一时刻多次修改同一个属性, 只会触发一次 watcher, 结果也是最终结果(因为这个一般用于渲染, 中间状态太多会出问题).
+
 1. 请在初始化时提前声明数据结构, 否则 watch 函数监听不到.
+
 1. 实在在初始化的时候声明不出来的数据结构, 请使用 `ds.setIn` 函数进行设置, 一次设置, 终生使用.
+
+1. 目前只提供子 module 的动态声明功能, 不支持动态删除, 真的需要的话再说.
 
 # How to use
 
@@ -363,6 +382,51 @@ export default () => createActions({
         state: ...state,
         mutations: ...mutations,
     });
+    ```
+
+1. 子 module 的 action 使用方法
+
+    通过 createActions 方法生成一份新的 action, 并且通过 bindActions 直接绑定到对应的子 module 上, 调用就可以了.
+    绑定在父上的 action 调用就可以修改父的属性, 绑在子上的 action 调用就可以修改子的属性.
+
+    _个人观点:_
+    _父子之间应该是相互独立的存在, 在调用 mutation 实现数据修改方面互相之间互不影响,_
+    _所有的修改操作应该由 business 在相应逻辑处理后根据具体业务情况自己调用不同的 action 来实现._
+
+    ```
+    import {ADD_A,} from './actions.js';
+    import createActions from './actions.js';
+    import bindActions from 'vue-own-redux/bindActions.js';
+
+    const ds = new DataStore({
+        state: {
+            a: 1,
+        },
+        mutations: {
+            [ADD_A] (state, action) {
+                state.a += (action.payload || 0);
+            },
+        },
+        modules: {
+            innerModule: {
+                state: {
+                    a: 1,
+                },
+                mutations: {
+                    [ADD_A] (state, action) {
+                        state.a += (action.payload || 0);
+                    },
+                },
+            },
+        },
+    });
+
+    const actions = bindActions(ds, createActions());
+    const innerActions = bindActions(ds.innerModule, createActions());
+
+    actions.addA(7);    // 7 === ds.a / 1 === ds.innerModule.a
+
+    innerActions.addA(2);    // 7 === ds.a / 3 === ds.innerModule.a
     ```
 
 
