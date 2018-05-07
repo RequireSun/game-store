@@ -3,6 +3,8 @@
 import GameStore from '../../index.js';
 import {INCREMENT_A,ADD_A,} from './actions.js';
 
+window.GameStore = GameStore;
+
 export default () => new GameStore({
     state: {
         a: 1,
