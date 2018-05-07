@@ -1,5 +1,4 @@
-
-import { def } from '../util/index.js'
+import { def } from './index.js'
 
 const arrayProto = Array.prototype;
 export const arrayMethods = Object.create(arrayProto);

@@ -5,23 +5,27 @@
 
 编写参考: [https://segmentfault.com/a/1190000006599500](https://segmentfault.com/a/1190000006599500)
 
+webpack 参考: [https://github.com/cssmagic/blog/issues/56](https://github.com/cssmagic/blog/issues/56)
+
+webpack 编写还参考了 webpack 官方文档.
+
 __注意:__
 
-1. 请不要直接使用 idea 的使用 chrome 快捷预览页面的功能, 这个功能不支持 es6 的 import, 直接本地 anywhere 起一个静态文件服务器会好用一些.
+1. 查看 demo:
 
-    示例:
+    安装依赖
 
-    在项目根目录上运行:
-
-    ```shell
-    anywhere 8899
+    ```javascript
+    npm i
     ```
 
-    然后通过浏览器直接访问:
+    运行 webpack-dev-server
 
-    [http://127.0.0.1:8899/demo/index.html](http://127.0.0.1:8899/demo/index.html)
+    ```javascript
+    npm run dev
+    ```
 
-    打开控制台看就完事了.
+    浏览器会自动打开, 直接看控制台就可以了.
 
 1. 在同一时刻多次修改同一个属性, 只会触发一次 watcher, 结果也是最终结果(因为这个一般用于渲染, 中间状态太多会出问题).
 

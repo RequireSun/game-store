@@ -3,8 +3,9 @@ import {
     hasOwn,
     isObject,
     isPlainObject,
-    arrayMethods,
 } from './util/index.js';
+
+import {arrayMethods,} from "./util/array.js";
 
 import {hasProto,} from "./util/env.js";
 

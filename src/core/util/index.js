@@ -2,7 +2,7 @@
  * Created by kelvinsun on 18/4/10.
  */
 
-export * from './array.js';
+// export * from './array.js';
 
 /**
  * Perform no operation.

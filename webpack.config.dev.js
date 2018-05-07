@@ -25,6 +25,7 @@ const config = {
         compress: true,     // gzip 压缩
         // hot: true,          // 热加载
         open: true,         // 自动打开浏览器
+        openPage: '/index.html',    // 自动打开的页面
         progress: true,     // 运行进度输出到控制台
     },
     module: {
@@ -47,7 +48,8 @@ const config = {
     plugins: [
         new CleanWebpackPlugin(['build']),
         new HtmlWebpackPlugin({
-
+            filename: 'index.html',
+            template: 'example/index.html',
         }),
     ],
 };
