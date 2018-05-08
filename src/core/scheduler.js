@@ -112,7 +112,11 @@ function flushSchedulerQueue () {
     // 3. 如果一个组件在父组件的 watcher 运行时被销毁了, 那么应该跳过它的 watcher.
     //
     // 因为随着新对象的创建, id 是自增的, 所以直接按照 id 升序排列就可以了
-    queue.sort((a, b) => a.id - b.id);
+    //
+    //@NOTICE 这个地方原库中因为 id 的生成是根据树的遍历结构来的, 所以自然是自增的,
+    //        但是在我们应用场景中是用户手动监听的, 因而不存在这种 id 与父子关系的顺序
+    //        所以直接不排序了, 按照修改顺序执行应该也没问题
+    // queue.sort((a, b) => a.id - b.id);
 
     // do not cache length because more watchers might be pushed
     // as we run existing watchers

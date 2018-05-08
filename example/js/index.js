@@ -1,6 +1,7 @@
 import createStore from './store.js';
 import createActions from './actions.js';
 import bindActions from 'vue-own-redux/bindActions.js';
+import GameStore from '../../src/game-store.js';
 
 const ds = createStore();
 
@@ -131,4 +132,52 @@ promise = promise.then(() => {
     const actions = bindActions(ds.innerModule, createActions());
 
     actions.addA(8);
+});
+
+promise = promise.then(() => {
+    console.log('========== START 先赋值 obj 再赋值子元素就能监听到的问题 测试 ==========');
+    debugger;
+
+    const latestVal = {};
+    const gs = new GameStore({
+        state: {
+            a: 1,
+            obj: {
+                b: 2,
+            },
+        },
+    });
+
+    // 可以被触发
+    gs.watch('a', (val, oldVal) => {
+        console.log('a', val, oldVal);
+        latestVal['a'] = val;
+    });
+    // 可以被触发 (也会被子元素的修改触发)
+    gs.watch('obj', (val, oldVal) => {
+        console.log('obj', val, oldVal);
+        latestVal['obj'] = val;
+    });
+    // 可以被触发
+    gs.watch('obj.b', (val, oldVal) => {
+        console.log('obj.b', val, oldVal);
+        latestVal['obj.b'] = val;
+    });
+    // 不能被触发, 因为数据结构不在
+    gs.watch('obj.c', (val, oldVal) => {
+        console.log('obj.c', val, oldVal);
+        latestVal['obj.c'] = val;
+    });
+
+    // 实际上 obj.c 的监听器会在 obj 修改的时候被触发, 并不是 obj.c 赋值的时候触发
+    // 但是因为 watcher 是执行在 next-tick 中的, 所以 obj.c 赋值在 watcher 之前了
+    gs.obj.b = 6;
+    gs.obj = {};
+    gs.obj.b = 4;
+    gs.obj.c = 5;
+
+    setTimeout(() => {
+        // 这个地方不会触发的
+        gs.obj.c = 123;
+    }, 16);
 });

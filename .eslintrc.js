@@ -38,6 +38,8 @@ module.exports = {
         "no-unused-vars": 0,
         "linebreak-style": 0,
         "no-console": 0,
-        "no-constant-condition" : 0
+        "no-constant-condition" : 0,
+        // 在生产环境不允许 debugger 出现
+        "no-debugger": 'production' === process.env.NODE_ENV ? 1 : 0,
     }
 };
