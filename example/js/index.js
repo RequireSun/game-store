@@ -23,12 +23,28 @@ const gs = new GameStore.Store({
             }, 1000);
         },
     },
+    modules: {
+        moduleA: {
+            state: {
+                a: 4,
+            },
+            mutations: {
+                [ADD_A] (state, payload) {
+                    state.a += (payload || 0);
+                }
+            },
+        },
+    },
 });
 
 window.gs = gs;
 
 gs.watch('a', (val, oldVal) => {
     console.log('a', val, oldVal);
+});
+
+gs.watch('moduleA.a', (val, oldVal) => {
+    console.log('moduleA.a', val, oldVal);
 });
 
 gs.commit(ADD_A, 1);

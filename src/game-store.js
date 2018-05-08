@@ -38,8 +38,8 @@ class Store {
         // _proxyData 方法就此作古
         Object.defineProperty(this, 'state', {
             configurable: false,    // 不可重定义
-            enumerable: true,       // 不可被遍历
-            writable: true,         // 可修改?
+            enumerable: true,       // 可被遍历
+            writable: false,        // 感觉是不可修改的
             value: data,
         });
 
@@ -67,59 +67,40 @@ class Store {
             });
         }
 
-        // 这个地方直接全都 false 了, 真重名了的话调用方自己反省
         Object.keys(modules).forEach(key => {
-            const config = {
-                // namespace 默认空字符串
-                namespace: '',
-
-                ...modules[key],
-            };
-
-            if (modules[key].namespaced) {
-                // 启用命名空间的情况下就把命名空间名字传进去
-                modules[key].namespace = key;
-            }
-
-            if (this._namespace) {
-                // 这么写的话可以非常棒的加上命名空间的斜线
-                // _namespace 必存在
-                // namespace 不存在的情况:
-                // ['xxx', ''] == filter ==> ['xxx'] == join ==> 'xxx'
-                // namespace 存在的情况:
-                // ['xxx', 'yyy'] == filter ==> ['xxx', 'yyy'] == join ==> 'xxx/yyy'
-                config.namespace = [this._namespace, config.namespace].filter(item => item).join('/');
-            }
-
-            const ds = new Store(modules[key]);
-
-            this._registerModule(this, ds, key);
+            this._registerModule(this, modules[key], key);
         });
     }
 
     /**
      * @todo 这里的 isModule 判断需要重写
+     * @todo 这里把监听权利收归国有 (只有根可以用), 应该可以用吧
      * @param key
      * @param cb
      * @returns {*}
      */
     watch(key = '', cb) {
-        // 去掉第一个点之后的部分
-        const firstPart = key.replace(/\..*/, '');
+        return new Watcher(this.state, key, cb, {
+            user: true,
+            // deep: true,
+        });
 
-        //TODO 好像这个地方的思路对一点, 不可能存在 state 里面套 module 的状况吧?
-        if (this[firstPart] && this[firstPart]._isModule) {
-            // 如果第一个点之前的部分代表了一个 module
-            // 那就去掉本层的名字之后让这个 module 自己去监听
-            const watcher = this[firstPart].watch(key.replace(/[^.]*\./, ''), cb);
-
-            return new WatcherShell(this.state, key, watcher);
-        } else {
-            return new Watcher(this.state, key, cb, {
-                user: true,
-                // deep: true,
-            });
-        }
+        // // 去掉第一个点之后的部分
+        // const firstPart = key.replace(/\..*/, '');
+        //
+        // //TODO 好像这个地方的思路对一点, 不可能存在 state 里面套 module 的状况吧?
+        // if (this[firstPart] && this[firstPart]._isModule) {
+        //     // 如果第一个点之前的部分代表了一个 module
+        //     // 那就去掉本层的名字之后让这个 module 自己去监听
+        //     const watcher = this[firstPart].watch(key.replace(/[^.]*\./, ''), cb);
+        //
+        //     return new WatcherShell(this.state, key, watcher);
+        // } else {
+        //     return new Watcher(this.state, key, cb, {
+        //         user: true,
+        //         // deep: true,
+        //     });
+        // }
     }
 
     /**
@@ -198,36 +179,8 @@ class Store {
         }
     }
 
-    /**
-     * 调用 action
-     * 至少在我这里就是语法糖, 可能会有问题吧
-     * @todo async 没试过
-     * @todo 在面对 module 时可能需要改成和 vuex 一样的
-     * @todo rootState
-     * @param type
-     * @param payload
-     */
-    dispatch = (type, payload) => {
-        var rootState, res;
-
-        if ('string' === typeof(type)) {
-            // 不处理
-
-            // 因为我内部的调用都是使用 object 传值, 所以这个调用方式一定是用户调用的
-            // 这个地方应该也就是根, 直接赋值没问题
-            rootState = this.state;
-        } else if ('object' === typeof(type)) {
-            // 底下确定只有在 dispatch 函数内部调用子的时候 object 中会传 isChild
-            // 其他情况就当是用户调用根, 直接赋值 this.state 就好了
-            rootState = type.isChild ? type.rootState : this.state;
-            payload = type;
-            type = type.type;
-            // 删掉 type, 其他的都是 payload
-            delete payload.type;
-        } else {
-            // 其他情况下应该是有错的
-            throw new Error('commit with incorrect parameter');
-        }
+    _dispatch({type, payload, rootState,}) {
+        var res;
 
         //@NOTICE copy from commit
         const types = type.split('/').filter(item => item);
@@ -262,10 +215,9 @@ class Store {
                 const moduleNames = Object.keys(this._modules);
 
                 for (let i = 0, l = moduleNames.length; i < l; ++i) {
-                    res.push(this._modules[moduleNames[i]].dispatch({
+                    res.push(this._modules[moduleNames[i]]._dispatch({
                         type: types[0],
                         payload,
-                        isChild: true,
                         rootState,
                     }));
                 }
@@ -277,10 +229,9 @@ class Store {
             // 找对应的子模块
             // 子模块存在的情况下, 去掉当前的模块的命名空间, 把事件传进去
 
-            res = this._modules[types[0]].dispatch({
+            res = this._modules[types[0]]._dispatch({
                 type: types.slice(1).join('/'),
                 payload,
-                isChild: true,
                 rootState,
             });
 
@@ -294,19 +245,23 @@ class Store {
             // 这里就 return undefined 就好了
             return ;
         }
-    };
+    }
 
     /**
-     * 用来调用 mutations
-     * 好像 mutation 不需要处理 root 属性
-     * @todo 注册事件到 root 的情况
+     * 调用 action
+     * 至少在我这里就是语法糖, 可能会有问题吧
+     * @todo async 没试过
+     * @todo 在面对 module 时可能需要改成和 vuex 一样的
+     * @todo rootState
      * @param type
      * @param payload
      */
-    commit = (type, payload) => {
+    dispatch = (type, payload) => {
         if ('string' === typeof(type)) {
             // 不处理
         } else if ('object' === typeof(type)) {
+            // 底下确定只有在 dispatch 函数内部调用子的时候 object 中会传 isChild
+            // 其他情况就当是用户调用根, 直接赋值 this.state 就好了
             payload = type;
             type = type.type;
             // 删掉 type, 其他的都是 payload
@@ -316,6 +271,14 @@ class Store {
             throw new Error('commit with incorrect parameter');
         }
 
+        this._dispatch({
+            type,
+            payload,
+            rootState: this.state,
+        });
+    };
+
+    _commit({type, payload,}) {
         // 分割事件
         // 想了想还是要把有人手抖写了两个斜线 // 的情况排除掉
         const types = type.split('/').filter(item => item);
@@ -337,7 +300,7 @@ class Store {
                 const moduleNames = Object.keys(this._modules);
 
                 for (let i = 0, l = moduleNames.length; i < l; ++i) {
-                    this._modules[moduleNames[i]].commit({
+                    this._modules[moduleNames[i]]._commit({
                         type: types[0],
                         payload,
                     });
@@ -348,11 +311,43 @@ class Store {
             // 找对应的子模块
             // 子模块存在的情况下, 去掉当前的模块的命名空间, 把事件传进去
 
-            this._modules[types[0]].commit({
+            this._modules[types[0]]._commit({
                 type: types.slice(1).join('/'),
                 payload,
             });
         }
+    }
+
+    /**
+     * 用来调用 mutations
+     * 好像 mutation 不需要处理 root 属性
+     * @todo 注册事件到 root 的情况
+     * @todo 可能需要拆分成内部外部两个函数, 全用一个函数承载有点受不了
+     * 这个地方需要区分两种情况:
+     * 用户调用的还是我的代码循环调用的
+     *
+     * @param type
+     * @param payload
+     */
+    commit = (type, payload) => {
+        if ('string' === typeof(type)) {
+            // 不处理
+        } else if ('object' === typeof(type)) {
+            // 非子就直接获取 type 参数
+            // 非子的情况下 type 上也不可能存在 _isChild 属性
+            payload = type;
+            type = type.type;
+            // 删掉 type, 其他的都是 payload
+            delete payload.type;
+        } else {
+            // 其他情况下应该是有错的
+            throw new Error('commit with incorrect parameter');
+        }
+
+        this._commit({
+            type,
+            payload,
+        });
     };
 
     /**
@@ -360,11 +355,11 @@ class Store {
      * @param path
      * @param config
      */
-    registerModule(path, config) {
+    registerModule = (path, config) => {
         if (Array.isArray(path) && 1 < path.length) {
             // 如果下一个人存在, 那就交给下一个人去做
-            if (this[path[0]] && this[path[0]]._isModule) {
-                this[path[0]].registerModule(path.slice(1), config);
+            if (this._modules && this._modules[path[0]]) {
+                this._modules[path[0]].registerModule(path.slice(1), config);
             } else {
                 // 应该报错
                 throw new Error('新 module 只能声明在 module 上!');
@@ -375,13 +370,11 @@ class Store {
                 path = path[0];
             }
 
-            if (this[path] && this[path]._isModule) {
+            if (this._modules[path]) {
                 throw new Error('请不要重复定义 module');
             }
 
-            const ds = new Store(config);
-
-            this._registerModule(this, ds, path);
+            this._registerModule(this, config, path);
         } else {
             throw new Error('path 只可以是字符串或数组');
         }
@@ -393,6 +386,7 @@ class Store {
         if (this.state && Array.isArray(this.state._watchers)) {
             // 因为下面可能 teardown, 所以先复制一份为妙
             const watchers = this.state._watchers.slice();
+
             for (let i = 0; i < watchers.length; ++i) {
                 const item = watchers[i];
                 // 这个地方的 set 导致了只要调用了 setIn, 就会让 watcher 的参数出错的问题
@@ -418,15 +412,43 @@ class Store {
         }
     }
 
-    _registerModule(vm, module, moduleName) {
+    _registerModule = (vm, config, moduleName) => {
+        const parameter = {
+            // namespace 默认空字符串
+            namespace: '',
+
+            ...config,
+        };
+
+        if (parameter.namespaced) {
+            // 启用命名空间的情况下就把命名空间名字传进去
+            parameter.namespace = moduleName;
+        }
+
+        if (this._namespace) {
+            // 这么写可以非常棒的加上命名空间的斜线
+            // _namespace 必存在
+            // _namespace 不存在的情况下, 实例的 namespace 完全由自己决定
+            // namespace 不存在的情况:
+            // ['xxx', ''] == filter ==> ['xxx'] == join ==> 'xxx'
+            // namespace 存在的情况:
+            // ['xxx', 'yyy'] == filter ==> ['xxx', 'yyy'] == join ==> 'xxx/yyy'
+            parameter.namespace = [this._namespace, parameter.namespace].filter(item => item).join('/');
+        }
+
+        const instance = new Store(parameter);
+
         // 标记这个是个 module
-        Object.defineProperty(module.state, '_isModule', {
+        //TODO 这个不知道还要不要用
+        //TODO watch 的时候看看怎么处理
+        Object.defineProperty(instance.state, '_isModule', {
             configurable: false,
             enumerable: false,
             writable: false,
             value: true,
         });
 
+        // 这个地方直接全都 false 了, 真重名了的话调用方自己反省
         // 生气了, 直接把值定到 state 里面去
         // 但是按理来说这里不应该这么做的,
         // 毕竟这算是 Store 的事情, 不应该扯到数据上去的
@@ -434,7 +456,7 @@ class Store {
             configurable: false,
             enumerable: false,
             writable: false,
-            value: module.state,
+            value: instance.state,
         });
 
         if (!vm._modules) {
@@ -446,7 +468,7 @@ class Store {
             });
         }
 
-        vm._modules[moduleName] = module;
+        vm._modules[moduleName] = instance;
     }
 }
 
