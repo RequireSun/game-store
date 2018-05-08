@@ -436,6 +436,10 @@ export default () => createActions({
 
 # Update log
 
+## 2018-05-08 21:17
+
+1. API 整体 vuex 化 (进度: action / mutation 差不多了, 但 module 还不行)
+
 ## 2018-05-07 20:29
 
 1. 引入 mocha 框架
