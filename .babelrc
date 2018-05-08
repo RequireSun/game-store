@@ -3,5 +3,8 @@
     "stage-3",
     "latest",
     "es2015"
+  ],
+  "plugins": [
+    "transform-class-properties"
   ]
 }
