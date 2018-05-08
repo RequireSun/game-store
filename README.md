@@ -438,6 +438,7 @@ export default () => createActions({
 
 ## 2018-05-09 01:55
 
+1. module 插入应该是没问题了 (待检验)
 1. 解决了 action 中 commit 作用域不同的问题
 
 ## 2018-05-08 21:17
