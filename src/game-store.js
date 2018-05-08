@@ -179,7 +179,7 @@ class Store {
         }
     }
 
-    _dispatch({type, payload, rootState,}) {
+    _dispatch({type, payload, rootState, commit,}) {
         var res;
 
         //@NOTICE copy from commit
@@ -192,13 +192,21 @@ class Store {
 
             res = [];
 
+            // 没有只剩一位的时候不会到这里
+            // 第一次只剩一位的时候就是触发的根
+            // 这时候赋值
+            // commit 有值了就会传入下面的子中了
+            if (!commit) {
+                commit = this.commit;
+            }
+
             // 如果当前 store 的事件存在就调用当前的事件
             if (this._actions && hasOwn(this._actions, types[0]) &&
                 'function' === typeof(this._actions[types[0]])
             ) {
                 var tmpRes = this._actions[types[0]]({
                     state: this.state,
-                    commit: this.commit,
+                    commit,
                     dispatch: this.dispatch,
                     rootState: rootState,
                 }, payload);
@@ -215,10 +223,16 @@ class Store {
                 const moduleNames = Object.keys(this._modules);
 
                 for (let i = 0, l = moduleNames.length; i < l; ++i) {
+                    // 有 namespace 的就不需要一起 commit 了
+                    if (this._modules[moduleNames[i]]._namespace) {
+                        continue;
+                    }
+
                     res.push(this._modules[moduleNames[i]]._dispatch({
                         type: types[0],
                         payload,
                         rootState,
+                        commit,
                     }));
                 }
             }
@@ -270,7 +284,7 @@ class Store {
             throw new Error('commit with incorrect parameter');
         }
 
-        this._dispatch({
+        return this._dispatch({
             type,
             payload,
             rootState: this.state,
@@ -299,6 +313,10 @@ class Store {
                 const moduleNames = Object.keys(this._modules);
 
                 for (let i = 0, l = moduleNames.length; i < l; ++i) {
+                    // 有 namespace 的就不需要一起 commit 了
+                    if (this._modules[moduleNames[i]]._namespace) {
+                        continue;
+                    }
                     this._modules[moduleNames[i]]._commit({
                         type: types[0],
                         payload,
@@ -310,6 +328,7 @@ class Store {
             // 找对应的子模块
             // 子模块存在的情况下, 去掉当前的模块的命名空间, 把事件传进去
 
+            // 这里就不需要处理 namespace 的问题了, 因为只有 namespace 匹配的上的才会进来
             this._modules[types[0]]._commit({
                 type: types.slice(1).join('/'),
                 payload,
@@ -320,10 +339,8 @@ class Store {
     /**
      * 用来调用 mutations
      * 好像 mutation 不需要处理 root 属性
+     * 这个函数是用来给用户调用
      * @todo 注册事件到 root 的情况
-     * @todo 可能需要拆分成内部外部两个函数, 全用一个函数承载有点受不了
-     * 这个地方需要区分两种情况:
-     * 用户调用的还是我的代码循环调用的
      *
      * @param type
      * @param payload
@@ -409,7 +426,7 @@ class Store {
                 }
             }
         }
-    }
+    };
 
     _registerModule = (vm, config, moduleName) => {
         const parameter = {
@@ -451,9 +468,10 @@ class Store {
         // 生气了, 直接把值定到 state 里面去
         // 但是按理来说这里不应该这么做的,
         // 毕竟这算是 Store 的事情, 不应该扯到数据上去的
+        // 这个毕竟是往上植入数据, 应该是 true 的, 不知道为啥写成 false 了
         Object.defineProperty(vm.state, moduleName, {
             configurable: false,
-            enumerable: false,
+            enumerable: true,
             writable: false,
             value: instance.state,
         });

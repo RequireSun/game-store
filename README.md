@@ -436,6 +436,10 @@ export default () => createActions({
 
 # Update log
 
+## 2018-05-09 01:55
+
+1. 解决了 action 中 commit 作用域不同的问题
+
 ## 2018-05-08 21:17
 
 1. API 整体 vuex 化 (进度: action / mutation 差不多了, 但 module 还不行)

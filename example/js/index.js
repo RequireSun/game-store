@@ -18,9 +18,12 @@ const gs = new GameStore.Store({
     },
     actions: {
         [ACT_ADD_A] ({ commit, }, payload) {
-            setTimeout(() => {
-                commit(ADD_A, payload);
-            }, 1000);
+            return new Promise(res => {
+                setTimeout(() => {
+                    commit(ADD_A, payload);
+                    res();
+                }, 1000);
+            });
         },
     },
     modules: {
@@ -35,9 +38,55 @@ const gs = new GameStore.Store({
             },
             actions: {
                 [ACT_ADD_A] ({ commit, }, payload) {
-                    setTimeout(() => {
-                        commit(ADD_A, payload);
-                    }, 1000);
+                    return new Promise(res => {
+                        setTimeout(() => {
+                            commit(ADD_A, payload);
+                            res();
+                        }, 1000);
+                    });
+                },
+            },
+        },
+        moduleB: {
+            namespaced: true,
+            state: {
+                a: 5,
+            },
+            mutations: {
+                [ADD_A] (state, payload) {
+                    state.a += (payload || 0);
+                }
+            },
+            actions: {
+                [ACT_ADD_A] ({ commit, }, payload) {
+                    return new Promise(res => {
+                        setTimeout(() => {
+                            commit(ADD_A, payload);
+                            res();
+                        }, 1000);
+                    });
+                },
+            },
+            modules: {
+                moduleC: {
+                    state: {
+                        a: 3,
+                    },
+                    mutations: {
+                        [ADD_A] (state, payload) {
+                            state.a += (payload || 0);
+                        }
+                    },
+                    actions: {
+                        [ACT_ADD_A] ({ commit, }, payload) {
+                            return new Promise(res => {
+                                setTimeout(() => {
+                                    commit(ADD_A, payload);
+                                    res();
+                                }, 1000);
+                            });
+                        },
+                    },
                 },
             },
         },
@@ -56,9 +105,99 @@ gs.watch('moduleA.a', (val, oldVal) => {
     console.log('moduleA.a', val, oldVal);
 });
 
-gs.commit(ADD_A, 1);
+gs.watch('moduleB.a', (val, oldVal) => {
+    console.log('moduleB.a', val, oldVal);
+});
 
-gs.dispatch(ACT_ADD_A, 1);
+gs.watch('moduleB.moduleC.a', (val, oldVal) => {
+    console.log('moduleB.moduleC.a', val, oldVal);
+});
+
+gs.watch('moduleE.a', (val, oldVal) => {
+    console.log('moduleE.a', val, oldVal);
+});
+
+var promise = Promise.resolve();
+
+promise = promise.then(() => {
+    console.log('=== normal ===');
+
+    gs.commit(ADD_A, 1);
+
+    return gs.dispatch(ACT_ADD_A, 1);
+});
+
+promise = promise.then(() => {
+    console.log('=== module ===');
+
+    gs.commit('moduleB/ADD_A', 1);
+
+    return gs.dispatch('moduleB/ACT_ADD_A', 1);
+});
+
+promise = promise.then(() => {
+    console.log('=== in-time insert ===');
+
+    gs.registerModule('moduleD', {
+        namespaced: true,
+        state: {
+            a: 1,
+        },
+        mutations: {
+            [ADD_A] (state, payload) {
+                state.a += (payload || 0);
+            },
+        },
+        actions: {
+            [ACT_ADD_A] ({ commit, }, payload) {
+                return new Promise(res => {
+                    setTimeout(() => {
+                        commit(ADD_A, payload);
+                        res();
+                    }, 1000);
+                });
+            },
+        },
+    });
+
+    gs.watch('moduleD.a', (val, oldVal) => {
+        console.log('moduleD.a', val, oldVal);
+    });
+
+    gs.commit('moduleD/ADD_A', 1);
+
+    return gs.dispatch('moduleD/ACT_ADD_A', 1);
+});
+
+promise = promise.then(() => {
+    console.log('=== in-time insert with an existing watcher ===');
+
+    gs.registerModule('moduleE', {
+        namespaced: true,
+        state: {
+            a: 1,
+        },
+        mutations: {
+            [ADD_A] (state, payload) {
+                state.a += (payload || 0);
+            },
+        },
+        actions: {
+            [ACT_ADD_A] ({ commit, }, payload) {
+                return new Promise(res => {
+                    setTimeout(() => {
+                        commit(ADD_A, payload);
+                        res();
+                    }, 1000);
+                });
+            },
+        },
+    });
+
+    gs.commit('moduleE/ADD_A', 1);
+
+    return gs.dispatch('moduleE/ACT_ADD_A', 1);
+});
 
 // import createStore from './store.js';
 // import createActions from './actions.js';
