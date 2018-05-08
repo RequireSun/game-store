@@ -252,7 +252,6 @@ class Store {
      * 至少在我这里就是语法糖, 可能会有问题吧
      * @todo async 没试过
      * @todo 在面对 module 时可能需要改成和 vuex 一样的
-     * @todo rootState
      * @param type
      * @param payload
      */

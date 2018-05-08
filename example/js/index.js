@@ -33,9 +33,18 @@ const gs = new GameStore.Store({
                     state.a += (payload || 0);
                 }
             },
+            actions: {
+                [ACT_ADD_A] ({ commit, }, payload) {
+                    setTimeout(() => {
+                        commit(ADD_A, payload);
+                    }, 1000);
+                },
+            },
         },
     },
 });
+
+//TODO 看看 vuex 里面对于没有 namespaced 的模块的 action 是怎么处理的
 
 window.gs = gs;
 
