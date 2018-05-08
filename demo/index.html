@@ -9,6 +9,7 @@
 <script src="../node_modules/redux-actions/dist/redux-actions.js"></script>
 
 <script type="module">
+    import DataStore from '../src/dataStore.js';
     import createStore from './js/store.js';
     import createActions from './js/actions.js';
     import bindActions from '../node_modules/vue-own-redux/bindActions.js';
@@ -143,6 +144,54 @@
 
         actions.addA(8);
     });
+
+    promise = promise.then(() => {
+        console.log('========== START watcher sequence 测试 ==========');
+
+        const latestVal = {};
+        const gs = new DataStore({
+            state: {
+                a: 1,
+                obj: {
+                    b: 2,
+                },
+            },
+        });
+
+        // 可以被触发
+        gs.watch('a', (val, oldVal) => {
+            console.log('a', val, oldVal);
+            latestVal['a'] = val;
+        });
+        // 可以被触发
+        gs.watch('obj.b', (val, oldVal) => {
+            console.log('obj.b', val, oldVal);
+            latestVal['obj.b'] = val;
+        });
+        // 可以被触发 (也会被子元素的修改触发)
+        gs.watch('obj', (val, oldVal) => {
+            console.log('obj', val, oldVal);
+            latestVal['obj'] = val;
+        });
+        // 不能被触发, 因为数据结构不在
+        gs.watch('obj.c', (val, oldVal) => {
+            console.log('obj.c', val, oldVal);
+            latestVal['obj.c'] = val;
+        });
+
+        // 实际上 obj.c 的监听器会在 obj 修改的时候被触发, 并不是 obj.c 赋值的时候触发
+        // 但是因为 watcher 是执行在 next-tick 中的, 所以 obj.c 赋值在 watcher 之前了
+        gs.obj.b = 6;
+        gs.obj = {};
+        gs.obj.b = 4;
+        gs.obj.c = 5;
+
+        setTimeout(() => {
+            // 这个地方不会触发的
+            gs.obj.c = 123;
+        }, 16);
+    });
+
 
 </script>
 </body>

@@ -114,11 +114,12 @@ function flushSchedulerQueue () {
     // 因为随着新对象的创建, id 是自增的, 所以直接按照 id 升序排列就可以了
     // queue.sort((a, b) => a.id - b.id);
 
+    // 改成了根据 expression 判断谁前谁后了
     queue.sort((a, b) => {
         if (a && 'string' === typeof(a.expression) && b && 'string' === typeof(b.expression)) {
             if (0 === a.expression.indexOf(b.expression)) {
                 return 1;
-            } else if (b.expression.indexOf(a.expression)) {
+            } else if (0 === b.expression.indexOf(a.expression)) {
                 return -1;
             } else {
                 return 0;
