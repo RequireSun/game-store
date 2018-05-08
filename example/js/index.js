@@ -153,11 +153,6 @@ promise = promise.then(() => {
         console.log('a', val, oldVal);
         latestVal['a'] = val;
     });
-    // 可以被触发 (也会被子元素的修改触发)
-    gs.watch('obj', (val, oldVal) => {
-        console.log('obj', val, oldVal);
-        latestVal['obj'] = val;
-    });
     // 可以被触发
     gs.watch('obj.b', (val, oldVal) => {
         console.log('obj.b', val, oldVal);
@@ -167,6 +162,11 @@ promise = promise.then(() => {
     gs.watch('obj.c', (val, oldVal) => {
         console.log('obj.c', val, oldVal);
         latestVal['obj.c'] = val;
+    });
+    // 可以被触发 (也会被子元素的修改触发)
+    gs.watch('obj', (val, oldVal) => {
+        console.log('obj', val, oldVal);
+        latestVal['obj'] = val;
     });
 
     // 实际上 obj.c 的监听器会在 obj 修改的时候被触发, 并不是 obj.c 赋值的时候触发
