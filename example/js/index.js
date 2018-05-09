@@ -93,8 +93,6 @@ const gs = new GameStore.Store({
     },
 });
 
-//TODO 看看 vuex 里面对于没有 namespaced 的模块的 action 是怎么处理的
-
 window.gs = gs;
 
 gs.watch('a', (val, oldVal) => {
@@ -197,6 +195,34 @@ promise = promise.then(() => {
     gs.commit('moduleE/ADD_A', 1);
 
     return gs.dispatch('moduleE/ACT_ADD_A', 1);
+});
+
+promise = promise.then(() => {
+    console.log('=== set ===');
+
+    gs.watch('c', (val, oldVal) => {
+        console.log('c', val, oldVal);
+    });
+
+    gs.state.c = 1; // no effect
+
+    gs.set('c', 6); // effective
+
+    return Promise.resolve();
+});
+
+promise = promise.then(() => {
+    console.log('=== set in child module ===');
+
+    gs.watch('moduleA.c', (val, oldVal) => {
+        console.log('moduleA.c', val, oldVal);
+    });
+
+    gs.state.moduleA.c = 1; // no effect
+
+    gs.set('moduleA.c', 6); // effective
+
+    return Promise.resolve();
 });
 
 // import createStore from './store.js';

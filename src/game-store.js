@@ -111,16 +111,16 @@ class Store {
      * @param path
      * @param value
      */
-    setIn(path, value) {
-        // 在这个地方解析路径中是否有 module, 有的话直接交由对应 setIn 来执行
-        const modulePath = getInnerModulePath(this.state, path);
-
-        if (modulePath) {
-            // 偷懒了, 通过这个方法获取目标 module
-            const parent = getParentPath(this.state, modulePath + '.x');
-            // 因为这段 path 是从第一项开始获取的, 所以直接 replace 应该没问题
-            return parent.setIn(path.replace(modulePath + '.', ''), value);
-        }
+    set(path, value) {
+        // // 在这个地方解析路径中是否有 module, 有的话直接交由对应 setIn 来执行
+        // const modulePath = getInnerModulePath(this.state, path);
+        //
+        // if (modulePath) {
+        //     // 偷懒了, 通过这个方法获取目标 module
+        //     const parent = getParentPath(this.state, modulePath + '.x');
+        //     // 因为这段 path 是从第一项开始获取的, 所以直接 replace 应该没问题
+        //     return parent.setIn(path.replace(modulePath + '.', ''), value);
+        // }
 
         const parent = getParentPath(this.state, path);
         // 有返回值就是成功了, 这时候重新建立监控
@@ -136,14 +136,14 @@ class Store {
             // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
             let target = this.state;
             for (let i = 0; i < segments.length - 1 && target && target.__ob__; ++i) {
-                const property = Object.getOwnPropertyDescriptor(target, segments[i]);
-                if (
-                    !property ||
-                    !property.get || !property.get._isOb ||
-                    !property.set || !property.set._isOb
-                ) {
-                    break;
-                }
+                // const property = Object.getOwnPropertyDescriptor(target, segments[i]);
+                // if (
+                //     !property ||
+                //     !property.get || !property.get._isOb ||
+                //     !property.set || !property.set._isOb
+                // ) {
+                //     break;
+                // }
                 target = target[segments[i]];
             }
             // 在刚才找到的父节点上重新进行监控
