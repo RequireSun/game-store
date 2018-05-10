@@ -1,2 +1,9 @@
-export * from './src/game-store.js';
-export {default} from './src/game-store.js';     // 这样写才能 re-export default 的值
+import {Store} from "./src/game-store";
+
+export {
+	Store
+}
+
+export default {
+	Store
+}
