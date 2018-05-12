@@ -1,10 +1,4 @@
 /**
- * Created by kelvinsun on 18/4/10.
- */
-
-// export * from './array.js';
-
-/**
  * Perform no operation.
  * Stubbing args to make Flow happy without leaving useless transpiled code
  * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/)
@@ -172,28 +166,8 @@ export function handleError(...args) {
     console.error(...args);
 }
 
-/**
- * 如果在 path 中找到了 module, 就直接返回到达该 module 的路径
- * 返回为空则代表传入 path 不合法或者传入 path 不含 module
- * @param obj
- * @param path
- * @returns {string}
- */
-export function getInnerModulePath(obj, path) {
-    if (bailRE.test(path)) {
-        return ;
-    }
-    const segments = path.split('.');
+// 从 vuex 里抄出来的功能函数
 
-    for (let i = 0; i < segments.length; i++) {
-        // 中间找不到的话就相当于数据链路不对, 直接返回了就
-        if (!obj) return ;
-        if (obj._isModule) {
-            // 把已有部分带走, 因为 i 是在获取完之后再 +1 的, 所以本身就已经有偏差了
-            return segments.slice(0, i).join('.');
-        }
-        obj = obj[segments[i]];
-    }
-    // 找得到对应的父元素和找不到对应的父元素
-    return ;
+export function isPromise(val) {
+    return val && typeof val.then === 'function';
 }

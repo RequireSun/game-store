@@ -1,26 +1,24 @@
-import Watcher, {WatcherShell,} from './core/watcher.js';
+import Watcher, from './core/watcher.js';
 import {observe,} from './core/observer.js';
-import {isObject,setInPath,getParentPath,getInnerModulePath,} from './core/util/index.js';
+import {isObject, setInPath, getParentPath,isPromise,} from './core/util/index.js';
 import {hasOwn,} from './core/util/index.js';
 import {nextTick,} from './core/util/next-tick.js';
 
 /**
  * @todo 如果动态插入了一个 module, 那么之前的监听怎么办
  * @warn 各种处理的时候一定要记得用 this.state 而不是 this, 否则容易出神奇的问题
- * @todo getters 需要我把 computed 的实现搞回来
+ * @todo getters -> 需要我把 computed 的实现搞回来
  * @todo 补全 warn 状态有些 warn 的情况需要在 dev 下报错
  */
 class Store {
-    constructor(
-        {
-            state: value,
-            mutations,
-            actions,
-            modules = {},
-            namespaced = false,
-            namespace = '',
-        } = {})
-    {
+    constructor({
+                    state: value,
+                    mutations,
+                    actions,
+                    modules = {},
+                    namespaced = false,
+                    namespace = '',
+                } = {}) {
         const data = {};
         if (value) {
             Object.assign(data, value);
@@ -84,23 +82,6 @@ class Store {
             user: true,
             // deep: true,
         });
-
-        // // 去掉第一个点之后的部分
-        // const firstPart = key.replace(/\..*/, '');
-        //
-        // //TODO 好像这个地方的思路对一点, 不可能存在 state 里面套 module 的状况吧?
-        // if (this[firstPart] && this[firstPart]._isModule) {
-        //     // 如果第一个点之前的部分代表了一个 module
-        //     // 那就去掉本层的名字之后让这个 module 自己去监听
-        //     const watcher = this[firstPart].watch(key.replace(/[^.]*\./, ''), cb);
-        //
-        //     return new WatcherShell(this.state, key, watcher);
-        // } else {
-        //     return new Watcher(this.state, key, cb, {
-        //         user: true,
-        //         // deep: true,
-        //     });
-        // }
     }
 
     /**
@@ -112,16 +93,6 @@ class Store {
      * @param value
      */
     set(path, value) {
-        // // 在这个地方解析路径中是否有 module, 有的话直接交由对应 setIn 来执行
-        // const modulePath = getInnerModulePath(this.state, path);
-        //
-        // if (modulePath) {
-        //     // 偷懒了, 通过这个方法获取目标 module
-        //     const parent = getParentPath(this.state, modulePath + '.x');
-        //     // 因为这段 path 是从第一项开始获取的, 所以直接 replace 应该没问题
-        //     return parent.setIn(path.replace(modulePath + '.', ''), value);
-        // }
-
         const parent = getParentPath(this.state, path);
         // 有返回值就是成功了, 这时候重新建立监控
         // 没有返回值的话就代表了父层都没有, 怎么可能赋值成功呢
@@ -136,14 +107,6 @@ class Store {
             // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
             let target = this.state;
             for (let i = 0; i < segments.length - 1 && target && target.__ob__; ++i) {
-                // const property = Object.getOwnPropertyDescriptor(target, segments[i]);
-                // if (
-                //     !property ||
-                //     !property.get || !property.get._isOb ||
-                //     !property.set || !property.set._isOb
-                // ) {
-                //     break;
-                // }
                 target = target[segments[i]];
             }
             // 在刚才找到的父节点上重新进行监控
@@ -257,7 +220,7 @@ class Store {
         } else {
             // 没有对应的 action 的情况
             // 这里就 return undefined 就好了
-            return ;
+            return;
         }
     }
 
@@ -265,7 +228,6 @@ class Store {
      * 调用 action
      * 至少在我这里就是语法糖, 可能会有问题吧
      * @todo async 没试过
-     * @todo 在面对 module 时可能需要改成和 vuex 一样的
      * @param type
      * @param payload
      */
@@ -367,7 +329,6 @@ class Store {
     };
 
     /**
-     * @todo 这里因为 state 结构的改变, 判断条件等需要重写
      * @param path
      * @param config
      */
@@ -492,9 +453,3 @@ class Store {
 export default {
     Store,
 };
-
-// 从 vuex 里抄出来的功能函数
-
-function isPromise (val) {
-    return val && typeof val.then === 'function';
-}
