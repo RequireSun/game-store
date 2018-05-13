@@ -1,7 +1,7 @@
 import GameStore from "../../src/game-store";
 
 export const create = () => {
-    const gs = new GameStore({
+    const gs = new GameStore.Store({
         state: {
             a: 1,
             obj: {

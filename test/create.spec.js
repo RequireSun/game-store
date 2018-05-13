@@ -1,14 +1,10 @@
 const assert = require('assert');
-import GameStore from '../src/game-store.js';
+import {create,} from './useCase/create.js';
 
 describe('create', function () {
     it('the game-store instance value should match with the input value.', function () {
-        const gs = new GameStore({
-            state: {
-                a: 1,
-            },
-        });
+        const {gs,} = create();
 
-        assert.equal(gs.a, 1);
+        assert.equal(gs.state.a, 1);
     });
 });

@@ -1,4 +1,4 @@
-import Watcher, from './core/watcher.js';
+import Watcher from './core/watcher.js';
 import {observe,} from './core/observer.js';
 import {isObject, setInPath, getParentPath,isPromise,} from './core/util/index.js';
 import {hasOwn,} from './core/util/index.js';
