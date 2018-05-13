@@ -1,6 +1,10 @@
 import GameStore from "../../src/game-store";
 
 export const ADD_A = 'ADD_A';
+export const ADD_D = 'ADD_D';
+export const ACTION_ADD_A = 'ACTION_ADD_A';
+export const ACTION_ADD_D = 'ACTION_ADD_D';
+
 //TODO oldVal 没有 equal
 export const create = () => {
     const gs = new GameStore.Store({
@@ -10,11 +14,33 @@ export const create = () => {
                 b: 2,
             },
             arr: [],
+            d: 1,
         },
         mutations: {
             [ADD_A] (state, payload) {
                 state.a += (payload || 0);
-            }
+            },
+            [ADD_D] (state, {payload,}) {
+                state.d += (payload || 0);
+            },
+        },
+        actions: {
+            [ACTION_ADD_A] ({ commit, }, payload) {
+                return new Promise(res => {
+                    setTimeout(() => {
+                        commit(ADD_A, payload);
+                        res();
+                    }, 1000);
+                });
+            },
+            [ACTION_ADD_D] ({ commit, }, payload) {
+                return new Promise(res => {
+                    setTimeout(() => {
+                        commit(ADD_D, payload);
+                        res();
+                    }, 1000);
+                });
+            },
         },
     });
 
@@ -44,6 +70,10 @@ export const create = () => {
     gs.watch('arr', (val, oldVal) => {
         latestVal['arr'] = val;
         sequence.push('arr');
+    });
+    gs.watch('d', (val, oldVal) => {
+        latestVal['d'] = val;
+        sequence.push('d');
     });
 
     return {
