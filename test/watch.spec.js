@@ -119,4 +119,82 @@ describe('watch', function () {
 
         return promise;
     });
+
+    it('this library could also watch array modification', function () {
+        var promise = Promise.resolve(create());
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            gs.state.arr.push(1);
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            assert.deepEqual(latestVal, {'arr': [1]});
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            gs.state.arr.unshift(2);
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            assert.deepEqual(latestVal, {'arr': [2, 1]});
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            gs.state.arr.splice(1, 0, 3);
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            assert.deepEqual(latestVal, {'arr': [2, 3, 1]});
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            gs.state.arr.sort();
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            assert.deepEqual(latestVal, {'arr': [1, 2, 3]});
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            gs.state.arr.pop();
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            assert.deepEqual(latestVal, {'arr': [1, 2]});
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            gs.state.arr.shift();
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        promise = promise.then(({gs, latestVal, sequence,}) => {
+            assert.deepEqual(latestVal, {'arr': [2]});
+
+            return Promise.resolve({gs, latestVal, sequence,});
+        });
+
+        return promise;
+    });
 });

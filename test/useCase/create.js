@@ -1,5 +1,7 @@
 import GameStore from "../../src/game-store";
 
+export const ADD_A = 'ADD_A';
+//TODO oldVal 没有 equal
 export const create = () => {
     const gs = new GameStore.Store({
         state: {
@@ -7,6 +9,12 @@ export const create = () => {
             obj: {
                 b: 2,
             },
+            arr: [],
+        },
+        mutations: {
+            [ADD_A] (state, payload) {
+                state.a += (payload || 0);
+            }
         },
     });
 
@@ -32,6 +40,10 @@ export const create = () => {
     gs.watch('obj', (val, oldVal) => {
         latestVal['obj'] = val;
         sequence.push('obj');
+    });
+    gs.watch('arr', (val, oldVal) => {
+        latestVal['arr'] = val;
+        sequence.push('arr');
     });
 
     return {

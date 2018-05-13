@@ -10,7 +10,7 @@ const methodsToPatch = [
     'unshift',
     'splice',
     'sort',
-    'reverse'
+    'reverse',
 ];
 
 /**

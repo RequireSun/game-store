@@ -478,8 +478,17 @@ promise = promise.then(() => {
     innerActions.addA(2);    // 7 === ds.a / 3 === ds.innerModule.a
     ```
 
+# TODO
+
+1. 测试用例中没有对 oldVal 进行校验
+1. 需要兼容 node 支持和不支持 module 的两种引用方式
+
 
 # Update log
+
+## 2018-05-13 16:06
+
+1. 跟着覆盖率不断补齐测试用例, 覆盖率还真的挺有用的 (写库的时候, 写业务的时候就太累赘了)
 
 ## 2018-05-13 15:40
 
