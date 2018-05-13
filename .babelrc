@@ -2,9 +2,17 @@
   "presets": [
     "stage-3",
     "latest",
-    "es2015"
+    "es2015",
+    "env"
   ],
   "plugins": [
     "transform-class-properties"
-  ]
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  }
 }

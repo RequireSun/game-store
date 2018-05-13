@@ -61,7 +61,10 @@ typings/
 .idea
 
 # build
-
 build
 lib
 dist
+coverage
+
+# nyc
+.nyc_output
