@@ -3,15 +3,19 @@ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const libraryName = 'game-store';
-const outputFile = libraryName + '.js';
+
+// "main": "dist/vue.runtime.common.js",
+//     "module": "dist/vue.runtime.esm.js",
+//     "unpkg": "dist/vue.js",
+//     "jsdelivr": "dist/vue.js",
 
 const config = {
-    entry: __dirname + '/src/game-store.js',
+    entry: __dirname + `/src/${libraryName}.js`,
     output: {
-        path: __dirname + '/lib',
-        filename: outputFile,
+        path: __dirname + '/dist',
+        filename: `${libraryName}.common.js`,
         library: libraryName,
-        libraryTarget: 'umd',
+        libraryTarget: 'commonjs-module',
         umdNamedDefine: true,
     },
     devtool: 'source-map',
@@ -33,7 +37,7 @@ const config = {
         extensions: ['.js'],
     },
     plugins: [
-        new CleanWebpackPlugin(['lib']),
+        new CleanWebpackPlugin([`dist/${libraryName}.common.js`]),
     ],
 };
 

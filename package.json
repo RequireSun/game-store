@@ -2,13 +2,18 @@
   "name": "game-store",
   "version": "0.3.1",
   "description": "主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.",
-  "main": "index.js",
+  "main": "dist/game-store.common.js",
+  "module": "src/game-store.js",
+  "unpkg": "dist/game-store.js",
+  "jsdelivr": "dist/game-store.js",
   "scripts": {
     "dev": "webpack-dev-server --mode development --config webpack.config.dev.js",
-    "lib": "webpack --mode development --config webpack.config.lib.js",
-    "dist": "webpack --mode production --config webpack.config.production.js",
     "test": "mocha --require babel-core/register --colors -w test/*.spec.js",
-    "cover": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text mocha test/*.spec.js"
+    "cover": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text mocha test/*.spec.js",
+    "build": "npm run build:common && npm run build:umd && npm run build:umd-min",
+    "build:common": "webpack --mode development --config webpack.config.common.js",
+    "build:umd": "webpack --mode development --config webpack.config.umd.js",
+    "build:umd-min": "webpack --mode production --config webpack.config.umd.js"
   },
   "repository": {
     "type": "git",
