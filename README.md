@@ -481,10 +481,13 @@ promise = promise.then(() => {
 # TODO
 
 1. 测试用例中没有对 oldVal 进行校验
-1. 需要兼容 node 支持和不支持 module 的两种引用方式
 
 
 # Update log
+
+## 2018-05-14 12:29
+
+1. 支持直接下载、 commonJS 和 module 的方式引用
 
 ## 2018-05-14 01:17
 
