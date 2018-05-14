@@ -450,6 +450,9 @@ class Store {
     }
 }
 
+export {
+    Store
+};
 export default {
     Store,
 };
