@@ -2,8 +2,6 @@
  * Created by kelvinsun on 18/4/10.
  */
 
-export * from './array.js';
-
 /**
  * Perform no operation.
  * Stubbing args to make Flow happy without leaving useless transpiled code
@@ -197,3 +195,5 @@ export function getInnerModulePath(obj, path) {
     // 找得到对应的父元素和找不到对应的父元素
     return ;
 }
+
+export * from './array.js';
