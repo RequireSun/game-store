@@ -19,6 +19,7 @@
   "homepage": "https://github.com/RequireSun/game-store#readme",
   "dependencies": {},
   "devDependencies": {
+    "@babel/preset-typescript": "^7.1.0",
     "babel-core": "^6.26.3",
     "babel-plugin-istanbul": "^5.0.1",
     "babel-preset-env": "^1.7.0",
@@ -33,7 +34,9 @@
     ],
     "env": {
       "test": {
-        "plugins": ["istanbul"]
+        "plugins": [
+          "istanbul"
+        ]
       }
     }
   }
