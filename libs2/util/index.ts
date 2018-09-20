@@ -1,6 +1,7 @@
 'use strict';
 
-export {generateParser, getPathInnerModule, getValueParent, setInPath,} from './path.ts';
+export { generateParser, getPathInnerModule, getValueParent, setInPath, } from './path.ts';
+export { arrayMethods, } from './array.ts';
 
 /**
  * 自己写的
@@ -36,6 +37,65 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
  */
 export function hasOwn(obj: object, key: string): boolean {
     return hasOwnProperty.call(obj, key);
+}
+
+/**
+ * Get the raw type string of a value e.g. [object Object]
+ */
+const _toString: () => string = Object.prototype.toString;
+
+/**
+ * Strict object type check. Only returns true
+ * for plain JavaScript objects.
+ * @param obj {?*}
+ * @returns {boolean}
+ */
+export function isPlainObject (obj: object): boolean {
+    return _toString.call(obj) === '[object Object]';
+}
+
+/**
+ * Define a property.
+ * @param obj {Object}
+ * @param key {string}
+ * @param val {*?}
+ * @param enumerable {boolean?}
+ */
+export function def (obj: object, key: string, val: any, enumerable?: boolean): void {
+    Object.defineProperty(obj, key, {
+        value: val,
+        enumerable: !!enumerable,
+        writable: true,
+        configurable: true,
+    });
+}
+
+/**
+ * Augment an target Object or Array by intercepting
+ * the prototype chain using __proto__
+ * @param target
+ * @param src {Object}
+ * @param keys {*?}
+ */
+export function protoAugment(target: object, src: object, keys?: string[]): void {
+    /* eslint-disable no-proto */
+    target.__proto__ = src
+    /* eslint-enable no-proto */
+}
+
+/**
+ * Augment an target Object or Array by defining
+ * hidden properties.
+ * @param target {Object}
+ * @param src {Object}
+ * @param keys {Array<string>}
+ */
+/* istanbul ignore next */
+export function copyAugment(target: object, src: object, keys: string[]): void {
+    for (let i: number = 0, l: number = keys.length; i < l; ++i) {
+        const key: string = keys[i];
+        def(target, key, src[key]);
+    }
 }
 
 
