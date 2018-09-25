@@ -1,7 +1,8 @@
 'use strict';
 
 export { generateParser, getPathInnerModule, getValueParent, setInPath, } from './path.ts';
-export { arrayMethods, } from './array.ts';
+export { arrayMethods, remove, } from './array.ts';
+export { nextTick, } from './next-tick.ts';
 
 /**
  * 自己写的

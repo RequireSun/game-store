@@ -11,9 +11,9 @@ import {
     arrayMethods,
 } from './util/index.ts';
 
-import { hasProto, } from './util/env.js';
+import { hasProto, } from './util/env.ts';
 
-import Dep from './dep.js';
+import Dep from './dep.ts';
 
 const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
 

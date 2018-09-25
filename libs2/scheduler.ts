@@ -20,7 +20,7 @@ let circular: { number: number, } = {};
 /**
  * @type {Array<Watcher>}
  */
-const queue: Watcher[] = [];
+const queue: WatcherBase[] = [];
 /**
  *
  * @type {Array<Component>}

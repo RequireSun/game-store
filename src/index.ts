@@ -1,13 +1,17 @@
 'use strict';
 
-import Watcher, { WatcherShell, } from "../libs2/watcher.ts";
+import Watcher, { WatcherShell, WatcherBase, } from "../libs2/watcher.ts";
+
 import {
     getPathInnerModule,
     getValueParent,
     setInPath,
     isObject,
     hasOwn,
+    nextTick,
 } from '../libs2/util/index.ts';
+
+import { observe, Observer, } from '../libs2/observer.ts';
 
 interface StoreConfig {
     state: object,
@@ -16,8 +20,10 @@ interface StoreConfig {
 }
 
 export default class GameStore {
-    _data: object;
+    _data: { __ob__: Observer, _watchers : WatcherBase[], };
     _watchers: WatcherBase[];
+    _mutations: ((...args: any[]) => any)[];
+    _isBeingDestroyed: boolean;
 
     constructor({state, mutations, modules = {},}: StoreConfig = {}) {
         const data: object = {};
@@ -55,18 +61,18 @@ export default class GameStore {
 
         // 这个地方直接全都 false 了, 真重名了的话调用方自己反省
         Object.keys(modules).forEach(key => {
-            const ds = new DataStore(modules[key]);
+            const ds = new GameStore(modules[key]);
 
             this._registerModule(this, ds, key);
         });
     }
 
     _proxyData(key: string, setter?: () => void, getter?: () => any): void {
-        const get = function (): any {
+        const get: () => any = function (): any {
             return this._data[key];
         };
 
-        const set = function (newVal): void {
+        const set: (newVal: any) => void = function (newVal: any): void {
             this._data[key] = newVal;
         };
 
@@ -90,7 +96,7 @@ export default class GameStore {
             });
     }
 
-    watch(key: string = '', cb: () => void): WatcherBase {
+    watch(key: string = '', cb: (val, oldVal) => any): WatcherBase {
         // 去掉第一个点之后的部分
         const firstPart: string = key.replace(/\..*/, '');
 
@@ -251,18 +257,19 @@ export default class GameStore {
         if (this._data && Array.isArray(this._data._watchers)) {
             // 因为下面可能 teardown, 所以先复制一份为妙
             const watchers: WatcherBase[] = this._data._watchers.slice();
-            for (let i = 0; i < watchers.length; ++i) {
+            for (let i: number = 0; i < watchers.length; ++i) {
                 const item: WatcherBase = watchers[i];
                 // 这个地方的 set 导致了只要调用了 setIn, 就会让 watcher 的参数出错的问题
                 // 所以这个地方需要根据 path 对 watcher 的 expression 对比, 如果对应上了, 再去重做
                 //TODO 这个地方重点观察, 我把它的 indexOf 的调用和被调用关系对调过来了
                 //TODO 因为现在情况是可能一开始监听了一个属性, 后来这个属性被 module 覆盖了, 那么应该也要触发 cb 的
                 //TODO 此时 pathString === module 路径, item.expression > pathString
+                //TODO watcherShell 没有 cb, 需要特殊处理
                 if (0 === item.expression.indexOf(pathString)) {
                     // 如果已经有监听这个东西的 watcher 了, 那么就要去删除并重建
                     // 上面已经通过 throw error 消灭了重复定义 module 的情况了, 所以直接搞 watcher 应该没问题
-                    const key = item.expression;
-                    const cb = item.cb;
+                    const key: string = item.expression;
+                    const cb: (val, oldVal) => any = item.cb;
                     item.teardown();
                     const watcher = this.watch(key, cb);
                     // 试试能不能通过黑科技来触发 cb

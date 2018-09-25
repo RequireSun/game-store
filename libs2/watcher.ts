@@ -4,8 +4,12 @@ import {
     generateParser,
     handleError,
     isObject,
+    remove,
 } from './util/index.ts';
+
 import Dep, { pushTarget, popTarget, } from './dep.ts';
+import { traverse, } from './traverse.ts';
+import { queueWatcher, } from './scheduler.ts';
 
 let uid: number = 0;
 
@@ -14,6 +18,7 @@ export interface WatcherBase {
     get: () => any,
     teardown: () => void,
     run: () => void,
+    value: any,
 }
 
 /**
@@ -336,15 +341,6 @@ export class WatcherShell implements WatcherBase {
         vm._watchers.push(this);
         this.expression = expOrFn.toString();
         this.target = target;
-
-        Object.defineProperty(this, 'value', {
-            get: (): any => {
-                return target.value;
-            },
-            set: (newVal: any): void => {
-                target.value = newVal;
-            },
-        });
     }
 
     get(): any {
@@ -357,5 +353,13 @@ export class WatcherShell implements WatcherBase {
 
     run(): void {
         return this.target.run();
+    }
+
+    public get value(): any {
+        return this.target.value;
+    }
+
+    public set value(newVal: any) {
+        this.target.value = newVal;
     }
 }

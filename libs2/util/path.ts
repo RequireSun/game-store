@@ -15,6 +15,7 @@ export function generateParser(path: string): (obj: object) => any | void {
     if (bailRE.test(path)) {
         return;
     }
+
     const segments: string[] = path.split('.');
 
     return function (obj: object): any | void {
@@ -38,6 +39,7 @@ export function getPathInnerModule(obj: GameStore, path: string): string | void 
     if (bailRE.test(path)) {
         return ;
     }
+
     const segments: string[] = path.split('.');
 
     for (let i = 0; i < segments.length; i++) {
@@ -64,6 +66,7 @@ export function getValueParent(obj: object, path: string): any | void {
     if (bailRE.test(path)) {
         return ;
     }
+
     const segments: string[] = path.split('.');
 
     for (let i = 0; i < segments.length - 1; i++) {
@@ -85,6 +88,7 @@ export function setInPath(obj: object, path: string, value: any): string[] | voi
     if (bailRE.test(path)) {
         return;
     }
+
     const segments: string[] = path.split('.');
 
     for (let i: number = 0; i < segments.length - 1; i++) {
@@ -97,6 +101,6 @@ export function setInPath(obj: object, path: string, value: any): string[] | voi
         obj[segments[segments.length - 1]] = value;
         return segments;
     } else {
-        return;
+        return ;
     }
 }

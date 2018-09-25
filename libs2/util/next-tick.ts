@@ -137,7 +137,7 @@ export function withMacroTask (fn): () => any {
  * @param cb {Function?}
  * @param ctx {Object?}
  */
-export function nextTick (cb: () => void, ctx?: T): Promise<T> | void {
+export function nextTick<T>(cb: () => void, ctx?: T): Promise<T> | void {
     let _resolve: (value?: (any)) => void;
 
     callbacks.push(() => {

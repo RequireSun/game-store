@@ -91,10 +91,10 @@ let _Set;
 /* istanbul ignore if */ // $flow-disable-line
 if ('undefined' !== typeof(Set) && isNative(Set)) {
     // use native Set when available.
-    _Set = Set
+    _Set = Set;
 } else {
     // a non-standard Set polyfill that only works with primitive keys.
-    _Set = class Set implements SimpleSet {
+    _Set = class CustomSet implements SimpleSet {
         /**
          * @type {Object}
          */
@@ -108,14 +108,14 @@ if ('undefined' !== typeof(Set) && isNative(Set)) {
          * @param key {string|number}
          * @returns {boolean}
          */
-        has(key: string|number): boolean {
+        has(key: (string | number)): boolean {
             return this.set[key] === true;
         }
 
         /**
          * @param key {string|number}
          */
-        add(key: string|number): void {
+        add(key: (string | number)): void {
             this.set[key] = true;
         }
 
@@ -125,6 +125,5 @@ if ('undefined' !== typeof(Set) && isNative(Set)) {
     }
 }
 
-export {_Set};
-export {SimpleSet};
+export { _Set, SimpleSet, };
 
