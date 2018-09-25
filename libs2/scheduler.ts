@@ -9,14 +9,14 @@ import {devtools,} from './util/env.ts';
 export const MAX_UPDATE_COUNT: number = 100;
 /**
  * 记录有哪些 watcher 需要被执行
- * @type {{key{number}: true?}}
+ // * @type {{key{number}: true?}}
  */
-let has = {};
+let has: { number: boolean, } = {};
 /**
  * 用来记录环形依赖
- * @type {{key{number}: {number}}}
+ // * @type {{key{number}: {number}}}
  */
-let circular = {};
+let circular: { number: number, } = {};
 /**
  * @type {Array<Watcher>}
  */
@@ -25,7 +25,7 @@ const queue: Watcher[] = [];
  *
  * @type {Array<Component>}
  */
-const activatedChildren = [];
+const activatedChildren: Component[] = [];
 let index: number = 0;
 let flushing: boolean = false;
 let waiting: boolean = false;
@@ -96,7 +96,7 @@ function resetSchedulerState(): void {
 function flushSchedulerQueue(): void {
     // 标记为已冲掉
     flushing = true;
-    let watcher, id;
+    let watcher: WatcherBase, id: number;
 
     // Sort queue before flush.
     // This ensures that:
@@ -203,8 +203,8 @@ function flushSchedulerQueue(): void {
  *
  * @param watcher {Watcher}
  */
-export function queueWatcher(watcher) {
-    const id = watcher.id;
+export function queueWatcher(watcher: WatcherBase): void {
+    const id: number = watcher.id;
 
     // 没有被记录过才会进得来(在同一个事件中不重复执行 watcher)
     if (has[id] == null) {
@@ -220,7 +220,7 @@ export function queueWatcher(watcher) {
             // 翻译:
             // 如果正在清理状态中, 基于 watcher 的 id 把它合并到队列中
             // 如果之前传过这个 id 的 watcher, 传入的就会在下一个 tick 立刻运行
-            let i = queue.length - 1;
+            let i: number = queue.length - 1;
             // 找到比 index 大, 但是 id 却比传入的 id 大的项
             while (i > index && queue[i].id > watcher.id) {
                 i--;

@@ -9,7 +9,7 @@ import Dep, { pushTarget, popTarget, } from './dep.ts';
 
 let uid: number = 0;
 
-interface WatcherBase {
+export interface WatcherBase {
     expression: string;
     get: () => any,
     teardown: () => void,
