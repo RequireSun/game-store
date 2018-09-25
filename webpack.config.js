@@ -1,14 +1,25 @@
 'use strict';
 
+const os = require('os');
 const path = require('path');
 
 // 备注一下 npx 可以直接运行 node_modules 下面的命令
+
+// plugin-transform-runtime 复用公共函数, 缩小包大小 21k -> 20k
 
 module.exports = {
     entry: './src/index.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'game-store.js',
+    },
+    devServer: {
+        progress: true,
+        open: 'win32' === os.platform() ? 'Chrome' : 'Google Chrome',
+        openPage: 'http://127.0.0.1:8008/index.html',
+        host: '0.0.0.0',
+        port: 8008,
+        contentBase: path.resolve(__dirname, 'dist'),
     },
     module: {
         rules: [{
