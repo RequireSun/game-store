@@ -36,28 +36,28 @@ export default class Dep {
      */
     subs: WatcherBase[] = [];
 
-    constructor () {
+    constructor() {
         this.id = ++uid;
     }
 
     /**
      * @param sub {Watcher}
      */
-    addSub (sub: Watcher): void {
+    addSub(sub: Watcher): void {
         this.subs.push(sub);
     }
 
     /**
      * @param sub {Watcher}
      */
-    removeSub (sub: Watcher): void {
+    removeSub(sub: Watcher): void {
         remove(this.subs, sub);
     }
 
     /**
      * 向全局缓存的 target 上添加自己的依赖
      */
-    depend (): void {
+    depend(): void {
         if (Dep.target) {
             Dep.target.addDep(this);
         }
@@ -66,7 +66,7 @@ export default class Dep {
     /**
      * 通知自己的每个监听项, 我更新了
      */
-    notify (): void {
+    notify(): void {
         // stabilize the subscriber list first
         // 为了防止数组有变化, 先拷贝一份需要通知的数组
         const subs = this.subs.slice();
@@ -82,11 +82,11 @@ const targetStack: WatcherBase[] = [];
 /**
  * @param _target {?Watcher}
  */
-export function pushTarget (_target: Watcher): void {
+export function pushTarget(_target: Watcher): void {
     if (Dep.target) targetStack.push(Dep.target);
     Dep.target = _target;
 }
 
-export function popTarget (): void {
+export function popTarget(): void {
     Dep.target = targetStack.pop();
 }

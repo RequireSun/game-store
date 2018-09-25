@@ -1,6 +1,5 @@
 'use strict';
 
-
 /**
  * Parse simple path.
  * 简单路径的解析

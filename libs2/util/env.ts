@@ -30,7 +30,7 @@ if (inBrowser) {
             }
         })); // https://github.com/facebook/flow/issues/285
         window.addEventListener('test-passive', null, opts);
-    } catch (e) {}
+    } catch (e: Error) {}
 }
 
 // this needs to be lazy-evaled because vue may be required before
@@ -60,7 +60,7 @@ export const devtools: object = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__
  * @param Ctor {?*}
  * @returns {boolean}
  */
-export function isNative(Ctor): boolean {
+export function isNative(Ctor: any): boolean {
     return 'function' === typeof(Ctor) && /native code/.test(Ctor.toString());
 }
 

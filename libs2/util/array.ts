@@ -1,7 +1,7 @@
 'use strict';
 
 import { def, } from './index.ts';
-import {Observer} from "../observer";
+import {Observer} from '../observer.ts';
 
 const arrayProto: object = Array.prototype;
 export const arrayMethods: Array = Object.create(arrayProto);

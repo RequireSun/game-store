@@ -11,7 +11,7 @@ import {
     arrayMethods,
 } from './util/index.ts';
 
-import {hasProto,} from "./util/env.js";
+import { hasProto, } from './util/env.js';
 
 import Dep from './dep.js';
 
@@ -187,13 +187,13 @@ export function defineReactive(obj, key, val, customSetter, shallow): void {
         return value;
     };
 
-    const reactiveSetter = function (newVal): void {
+    const reactiveSetter: (newVal: any) => void = function (newVal): void {
         // 先获取原来的值
         const value: any = getter ? getter.call(obj) : val;
         // 原值相同或者原值与新值中的某一个自己不等于自己 (一般是 NaN), 就不更新了
         /* eslint-disable no-self-compare */
         if (newVal === value || (newVal !== newVal && value !== value)) {
-            return;
+            return ;
         }
         //@EDITED 把非线上环境的判断去掉了, 为什么开发中不允许用 customSetter 啊
         /* eslint-enable no-self-compare */
@@ -242,7 +242,7 @@ export function defineReactive(obj, key, val, customSetter, shallow): void {
  * @param asRootData {boolean?}
  * @returns {Observer|void}
  */
-export function observe(value: object | any, asRootData?: boolean): Observer {
+export function observe(value: (object | any), asRootData?: boolean): Observer {
     // 因为我的内容上不可能有 VNode, 所以就删掉 VNode 的部分了
     if (!isObject(value)) {
         return;

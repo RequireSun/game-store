@@ -12,6 +12,20 @@ export function handleError(...args: any[]): void {
 }
 
 /**
+ * Perform no operation.
+ * Stubbing args to make Flow happy without leaving useless transpiled code
+ * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/)
+ * 翻译:
+ * 不做任何操作.
+ * 使用多余的参数而不是(容易发生泄漏的?) ...rest 语句来骗过 Flow
+ *
+ * @param a {?*}
+ * @param b {?*}
+ * @param c {?*}
+ */
+export function noop (a?: any, b?: any, c?: any): void {}
+
+/**
  * Quick object check - this is primarily used to tell
  * Objects from primitive values when we know the value
  * is a JSON-compliant type.
