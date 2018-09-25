@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --compilers js:babel-core/register test/*.spec.js",
     "cov": "nyc npm test",
-    "build": "webpack --config webpack.config.js"
+    "build": "rimraf dist && webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "redux-actions": "^2.3.2",
+    "rimraf": "^2.6.2",
     "vue-own-redux": "^0.2.0",
     "webpack": "^4.19.1",
     "webpack-cli": "^3.1.0"

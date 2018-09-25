@@ -5,7 +5,7 @@
  */
 
 import { isObject, } from './util/index.ts';
-import { _Set as Set, SimpleSet, } from './util/env.js';
+import { _Set as Set, SimpleSet, } from './util/env.ts';
 
 const seenObjects: SimpleSet | Set = new Set();
 

@@ -30,7 +30,7 @@ if (inBrowser) {
             }
         })); // https://github.com/facebook/flow/issues/285
         window.addEventListener('test-passive', null, opts);
-    } catch (e: Error) {}
+    } catch (e) {}
 }
 
 // this needs to be lazy-evaled because vue may be required before
