@@ -76,7 +76,7 @@ export function isPlainObject (obj: object): boolean {
  * @param val {*?}
  * @param enumerable {boolean?}
  */
-export function def (obj: object, key: string, val: any, enumerable?: boolean): void {
+export function def (obj: object, key: string, val: any, enumerable?: boolean = false): void {
     Object.defineProperty(obj, key, {
         value: val,
         enumerable: !!enumerable,
@@ -111,6 +111,22 @@ export function copyAugment(target: object, src: object, keys: string[]): void {
         const key: string = keys[i];
         def(target, key, src[key]);
     }
+}
+
+/**
+ * decorator that sets the descriptor property of a class field.
+ * @param name string
+ * @param value true|false
+ */
+export function descriptor(name: string, value: boolean) {
+    return function (target: any, propertyKey: string) {
+        let descriptor = Object.getOwnPropertyDescriptor(target, propertyKey) || {};
+
+        if (descriptor[name] != value) {
+            descriptor[name] = value;
+            Object.defineProperty(target, propertyKey, descriptor)
+        }
+    };
 }
 
 

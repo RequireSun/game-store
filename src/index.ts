@@ -9,55 +9,71 @@ import {
     isObject,
     hasOwn,
     nextTick,
+    descriptor,
 } from '../libs2/util/index.ts';
 
 import { observe, Observer, } from '../libs2/observer.ts';
 
 interface StoreConfig {
     state: object,
-    mutations?: object,
+    mutations?: ((...args: any[]) => any)[],
     modules?: object,
 }
 
-export default class GameStore {
-    _data: { __ob__: Observer, _watchers : WatcherBase[], };
-    _watchers: WatcherBase[];
-    _mutations: ((...args: any[]) => any)[];
-    _isBeingDestroyed: boolean;
+interface GameStoreData {
+    __ob__: Observer,
+    _watchers : WatcherBase[],
+}
 
-    constructor({state, mutations, modules = {},}: StoreConfig = {}) {
-        const data: object = {};
+export default class GameStore {
+    @descriptor('configurable', false)
+    @descriptor('enumerable', false)
+    _data: GameStoreData;
+
+    @descriptor('configurable', false)
+    @descriptor('enumerable', false)
+    _mutations: ((...args: any[]) => any)[];
+
+    /**
+     * 是否正在被销毁
+     * @type {boolean}
+     * @private
+     */
+    @descriptor('enumerable', false)
+    _isBeingDestroyed: boolean = false;
+
+    /**
+     * 是否是子模块
+     * @type {boolean}
+     * @private
+     */
+    @descriptor('enumerable', false)
+    _isModule: boolean = false;
+
+    static generateData(state: object): GameStoreData {
+        const data: object = {
+            _watchers: [],
+        };
+        descriptor('enumerable', false)(data, '_watchers');
+        descriptor('configurable', false)(data, '_watchers');
 
         if (state) {
             Object.assign(data, state);
         }
-        // 要把 watcher 们关联上的
-        Object.defineProperty(data, '_watchers', {
-            configurable: false,    // 不可重定义
-            enumerable: false,      // 不可被遍历
-            writable: true,         // 可修改?
-            value: [],
-        });
 
         observe(data, true);
-        // 防止 data 被便利出来
-        Object.defineProperty(this, '_data', {
-            configurable: false,    // 不可重定义
-            enumerable: false,      // 不可被遍历
-            writable: true,         // 可修改?
-            value: data,
-        });
+        // 不够智能, 我把属性加齐全了也不算那个接口的数据
+        return <GameStoreData>data;
+    }
+
+    constructor({state, mutations, modules = {},}: StoreConfig = {}) {
+
+        this._mutations = mutations;
+        this._data = GameStore.generateData(state);
 
         // 数据代理
         // 实现 vm.xxx -> vm._data.xxx
-        Object.keys(data).forEach(key => this._proxyData(key));
-
-        Object.defineProperty(this, '_mutations', {
-            configurable: false,
-            enumerable: false,
-            writable: true,
-            value: mutations,
-        });
+        Object.keys(this._data).forEach(key => this._proxyData(key));
 
         // 这个地方直接全都 false 了, 真重名了的话调用方自己反省
         Object.keys(modules).forEach(key => {
@@ -67,7 +83,7 @@ export default class GameStore {
         });
     }
 
-    _proxyData(key: string, setter?: () => void, getter?: () => any): void {
+    private _proxyData(key: string, setter?: () => void, getter?: () => any): void {
         const get: () => any = function (): any {
             return this._data[key];
         };
@@ -129,7 +145,7 @@ export default class GameStore {
 
         if (modulePath) {
             // 偷懒了, 通过这个方法获取目标 module
-            const parent: any | void = getValueParent(this._data, modulePath + '.x');
+            const parent: GameStore = getValueParent(this._data, modulePath + '.x');
             // 因为这段 path 是从第一项开始获取的, 所以直接 replace 应该没问题
             return parent.setIn(path.replace(modulePath + '.', ''), value);
         }
@@ -284,7 +300,7 @@ export default class GameStore {
         }
     }
 
-    _registerModule(vm: GameStore, module: GameStore, moduleName: string): void {
+    private _registerModule(vm: GameStore, module: GameStore, moduleName: string): void {
         // 标记这个是个 module
         Object.defineProperty(module, '_isModule', {
             configurable: false,

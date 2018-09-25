@@ -7,16 +7,25 @@ import {nextTick,} from './util/next-tick.ts';
 import {devtools,} from './util/env.ts';
 
 export const MAX_UPDATE_COUNT: number = 100;
+
+interface SetIdBoolean {
+    [index: number]: boolean,
+}
+
+interface SetIdNumber {
+    [index: number]: number,
+}
+
 /**
  * 记录有哪些 watcher 需要被执行
- // * @type {{key{number}: true?}}
+ * @type {SetIdBoolean}
  */
-let has: { number: boolean, } = {};
+let has: SetIdBoolean = {};
 /**
  * 用来记录环形依赖
- // * @type {{key{number}: {number}}}
+ * @type {SetIdNumber}
  */
-let circular: { number: number, } = {};
+let circular: SetIdNumber = {};
 /**
  * @type {Array<Watcher>}
  */

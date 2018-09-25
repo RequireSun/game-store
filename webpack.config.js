@@ -6,6 +6,7 @@ const path = require('path');
 // 备注一下 npx 可以直接运行 node_modules 下面的命令
 
 // plugin-transform-runtime 复用公共函数, 缩小包大小 21k -> 20k
+// plugin-proposal-decorators 必须放在 proposal-class-properties 之前
 
 module.exports = {
     entry: './src/index.ts',
@@ -27,6 +28,7 @@ module.exports = {
             loader: 'babel-loader',
         }, ],
     },
+    mode: 'production',
     // env: {
     //     test: {
     //         "plugins": [

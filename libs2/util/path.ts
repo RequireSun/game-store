@@ -62,7 +62,7 @@ export function getPathInnerModule(obj: GameStore, path: string): string | void 
  * @param path {string}
  * @returns {Array.<string>|*}
  */
-export function getValueParent(obj: object, path: string): any | void {
+export function getValueParent(obj: object, path: string): any | void | GameStore {
     if (bailRE.test(path)) {
         return ;
     }
