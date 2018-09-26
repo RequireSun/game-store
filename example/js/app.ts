@@ -1,9 +1,6 @@
 'use strict';
 
-import GameStore from '../../src/index.ts';
+import { run, } from './index.ts';
 
-console.log(GameStore);
+run();
 
-const gameStore = new GameStore();
-
-console.log(gameStore);

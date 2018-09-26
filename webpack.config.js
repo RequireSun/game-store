@@ -28,7 +28,8 @@ module.exports = {
             loader: 'babel-loader',
         }, ],
     },
-    mode: 'production',
+    mode: 'development',
+    // mode: 'production',
     // env: {
     //     test: {
     //         "plugins": [

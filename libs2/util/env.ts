@@ -69,24 +69,6 @@ export const hasSymbol: boolean =
     'undefined' !== typeof(Symbol) && isNative(Symbol) &&
     'undefined' !== typeof(Reflect) && isNative(Reflect.ownKeys);
 
-interface SimpleSet {
-    /**
-     * @param key {string|number}
-     * @returns {boolean}
-     */
-    has: (key: string|number) => boolean;
-
-    /**
-     * @param key {string|number}
-     */
-    add: (key:string|number) => void;
-
-    /**
-     * @returns {void}
-     */
-    clear: () => void;
-}
-
 let _Set;
 /* istanbul ignore if */ // $flow-disable-line
 if ('undefined' !== typeof(Set) && isNative(Set)) {
@@ -124,6 +106,27 @@ if ('undefined' !== typeof(Set) && isNative(Set)) {
         }
     }
 }
+// 写这个是因为 mocha 引用 babel 编译有问题, 不会忽略 typescript 的 interface
+let SimpleSet;
 
-export { _Set, SimpleSet, };
+declare interface SimpleSet {
+    /**
+     * @param key {string|number}
+     * @returns {boolean}
+     */
+    has: (key: string|number) => boolean;
+
+    /**
+     * @param key {string|number}
+     */
+    add: (key:string|number) => void;
+
+    /**
+     * @returns {void}
+     */
+    clear: () => void;
+}
+
+export { _Set, };
+export { SimpleSet, };
 

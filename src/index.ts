@@ -16,14 +16,22 @@ import { observe, Observer, } from '../libs2/observer.ts';
 
 interface StoreConfig {
     state: object,
-    mutations?: ((...args: any[]) => any)[],
-    modules?: object,
+    mutations?: { [key: string]: ((...args: any[]) => any), },
+    modules?: { [key: string]: StoreConfig, },
 }
 
 interface GameStoreData {
     __ob__: Observer,
     _watchers : WatcherBase[],
 }
+
+// interface GameStore {
+//     _data: GameStoreData;
+//     _mutations: { [key: string]: (...args: any[]) => any, },
+//     _isBeingDestroyed: boolean,
+//     _isModule: boolean,
+//     [key: string]: number | string | object,
+// }
 
 export default class GameStore {
     @descriptor('configurable', false)
@@ -32,7 +40,7 @@ export default class GameStore {
 
     @descriptor('configurable', false)
     @descriptor('enumerable', false)
-    _mutations: ((...args: any[]) => any)[];
+    _mutations: { [key: string]: ((...args: any[]) => any), };
 
     /**
      * 是否正在被销毁
@@ -49,6 +57,8 @@ export default class GameStore {
      */
     @descriptor('enumerable', false)
     _isModule: boolean = false;
+
+    // [key: string]: (number | string | object | boolean | ((...args: any[]) => any) | { [key: string]: ((...args: any[]) => any), });
 
     static generateData(state: object): GameStoreData {
         const data: object = {

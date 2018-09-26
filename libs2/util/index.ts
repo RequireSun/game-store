@@ -8,9 +8,7 @@ export { nextTick, } from './next-tick.ts';
  * 自己写的
  * @param args
  */
-export function handleError(...args: any[]): void {
-    console.error(...args);
-}
+export const handleError: (...args: any[]) => void = Function.prototype.bind.call(console.error, console);
 
 /**
  * Perform no operation.

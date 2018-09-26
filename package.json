@@ -4,7 +4,9 @@
   "description": "主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register test/*.spec.js",
+    "test": "mocha --require scripts/babel-hook.js test/*.spec.js",
+    "_test": "mocha --compilers js:@babel/register test/*.spec.js",
+    "___test": "mocha --require @babel/register test/*.spec.js",
     "cov": "nyc npm test",
     "build": "rimraf dist && webpack --config webpack.config.js",
     "dev": "node scripts/server.js"
@@ -30,6 +32,7 @@
     "@babel/plugin-transform-runtime": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-typescript": "^7.1.0",
+    "@babel/register": "^7.0.0",
     "babel-loader": "^8.0.2",
     "babel-plugin-istanbul": "^5.0.1",
     "html-webpack-plugin": "^3.2.0",
