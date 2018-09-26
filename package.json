@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --require scripts/babel-hook.js test/*.spec.js",
-    "_test": "mocha --compilers js:@babel/register test/*.spec.js",
-    "___test": "mocha --require @babel/register test/*.spec.js",
+    "_test": "mocha test/*.spec.js --compilers ts:@babel/register js:@babel/register",
+    "__test": "mocha --require @babel/register test/*.spec.js",
     "cov": "nyc npm test",
+    "_cov": "nyc --require @babel/register mocha --file test/*.spec.js --compilers ts:@babel/register --compilers js:@babel/register",
     "build": "rimraf dist && webpack --config webpack.config.js",
     "dev": "node scripts/server.js"
   },
