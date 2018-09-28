@@ -2,6 +2,8 @@
 
 import Watcher, { WatcherShell, WatcherBase, } from "../libs2/watcher";
 
+import { GameStoreData, } from './index.d';
+
 import {
     getPathInnerModule,
     getValueParent,
@@ -20,9 +22,22 @@ interface StoreConfig {
     modules?: { [key: string]: StoreConfig, },
 }
 
-interface GameStoreData {
+interface GameStoreGetterSetter {
+    (...args: any[]): any;
+    _isOb?: boolean;
+    _vmOb?: boolean;
+}
+
+export interface GameStoreData {
     __ob__: Observer,
     _watchers : WatcherBase[],
+
+    /**
+     * 是否正在被销毁
+     * @type {boolean}
+     * @private
+     */
+    _isBeingDestroyed: boolean,
 }
 
 // interface ObjectJson {
@@ -47,14 +62,6 @@ export default class GameStore {
     _mutations: { [key: string]: ((...args: any[]) => any), };
 
     /**
-     * 是否正在被销毁
-     * @type {boolean}
-     * @private
-     */
-    @descriptor('enumerable', false)
-    _isBeingDestroyed: boolean = false;
-
-    /**
      * 是否是子模块
      * @type {boolean}
      * @private
@@ -70,9 +77,12 @@ export default class GameStore {
     static generateData(state: object): GameStoreData {
         const data: object = {
             _watchers: [],
+            _isBeingDestroyed: false,
         };
         descriptor('enumerable', false)(data, '_watchers');
         descriptor('configurable', false)(data, '_watchers');
+
+        descriptor('enumerable', false)(data, '_isBeingDestroyed');
 
         if (state) {
             Object.assign(data, state);
@@ -179,16 +189,17 @@ export default class GameStore {
                 parent[segments[segments.length - 1]] = undefined;
             }
             // 从根往下搜索没有 ob 过的对象, 找到第一个就直接开始监控
-            let target: object = this._data;
+            let target: GameStoreData = this._data;
             for (let i: number = 0; i < segments.length - 1 && target && target.__ob__; ++i) {
                 const property: PropertyDescriptor = Object.getOwnPropertyDescriptor(target, segments[i]);
                 if (
                     !property ||
-                    !property.get || !property.get._isOb ||
-                    !property.set || !property.set._isOb
+                    !property.get || !(<GameStoreGetterSetter>property.get)._isOb ||
+                    !property.set || !(<GameStoreGetterSetter>property.set)._isOb
                 ) {
                     break;
                 }
+
                 target = target[segments[i]];
             }
             // 在刚才找到的父节点上重新进行监控
@@ -223,7 +234,7 @@ export default class GameStore {
             // 如果是直接定义到了 ds 上的属性, 要记得重新 proxy 一下
             if (1 === segments.length) {
                 const property: PropertyDescriptor = Object.getOwnPropertyDescriptor(this, segments[0]);
-                if (!property || !property.get || !property.get._vmOb || !property.set || !property.set._vmOb) {
+                if (!property || !property.get || !(<GameStoreGetterSetter>property.get)._vmOb || !property.set || !(<GameStoreGetterSetter>property.set)._vmOb) {
                     this._proxyData(segments[0]);
                 }
             }

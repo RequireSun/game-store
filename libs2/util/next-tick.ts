@@ -1,7 +1,7 @@
 'use strict';
 
-import { noop, handleError, } from './index.ts';
-import { isIOS, isNative, } from './env.ts';
+import { noop, handleError, } from './index';
+import { isIOS, isNative, } from './env';
 
 const callbacks: (() => void)[] = [];
 let pending: boolean = false;

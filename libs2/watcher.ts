@@ -5,11 +5,15 @@ import {
     handleError,
     isObject,
     remove,
-} from './util/index.ts';
+} from './util/index';
 
-import Dep, { pushTarget, popTarget, } from './dep.ts';
-import { traverse, } from './traverse.ts';
-import { queueWatcher, } from './scheduler.ts';
+// 这个 reference 好像没用
+/// <reference path="../src/index.d.ts" />
+import {GameStoreData} from '../src/index';
+
+import Dep, { pushTarget, popTarget, } from './dep';
+import { traverse, } from './traverse';
+import { queueWatcher, } from './scheduler';
 
 let uid: number = 0;
 
@@ -31,7 +35,7 @@ export interface WatcherBase {
  * $watch() API 和指令都是用的这个.
  */
 export default class Watcher implements WatcherBase {
-    vm: GameStore;                //TODO
+    vm: GameStoreData;      //TODO
     deep: boolean;
     user: boolean;
     dirty: boolean;         //TODO 这个不知道是干啥的
@@ -46,8 +50,8 @@ export default class Watcher implements WatcherBase {
     dep: Dep;
     deps: Dep[];            //TODO
     newDeps: Dep[];         //TODO
-    depIds: Set;
-    newDepIds: Set;
+    depIds: Set<number>;
+    newDepIds: Set<number>;
 
     /**
      * 属性的字符串
@@ -75,7 +79,7 @@ export default class Watcher implements WatcherBase {
      * @edited isRenderWatcher 这个的作用找不出来, 先干掉了
      * @todo 要不要把 computed 做出来, 这个代价有点大
      */
-    constructor(vm: GameStore, expOrFn: string | ((obj: object) => any), cb: (val: any, oldVal: any) => any, options?: { deep?: boolean, user?: boolean, before?: () => void, }) {
+    constructor(vm: GameStoreData, expOrFn: string | ((obj: object) => any), cb: (val: any, oldVal: any) => any, options?: { deep?: boolean, user?: boolean, before?: () => void, }) {
         this.vm = vm;
         vm._watchers.push(this);
 
@@ -135,7 +139,7 @@ export default class Watcher implements WatcherBase {
 
         let value: any;
         //TODO
-        const vm: GameStore = this.vm; // 其实 vm 相当于 this 指针?
+        const vm: GameStoreData = this.vm; // 其实 vm 相当于 this 指针?
 
         try {
             value = this.getter.call(vm, vm);
@@ -195,7 +199,7 @@ export default class Watcher implements WatcherBase {
             }
         }
         // 这一步是 depIds 和 newDepIds 交换
-        let tmp: Set | Dep[] = this.depIds;
+        let tmp: Set<number> | Dep[] = this.depIds;
         this.depIds = this.newDepIds;
         this.newDepIds = tmp;
         // 清空交换后的 newDeps
@@ -340,7 +344,7 @@ export class WatcherShell implements WatcherBase {
     //TODO 这里会有问题
     cb: undefined = undefined;
 
-    constructor(vm: GameStore, expOrFn: string | ((obj: object) => any), target: Watcher) {
+    constructor(vm: GameStoreData, expOrFn: string | ((obj: object) => any), target: Watcher) {
         vm._watchers.push(this);
         this.expression = expOrFn.toString();
         this.target = target;

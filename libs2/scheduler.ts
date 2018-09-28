@@ -3,8 +3,8 @@
 /**
  * Created by kelvinsun on 18/4/10.
  */
-import {nextTick,} from './util/next-tick.ts';
-import {devtools,} from './util/env.ts';
+import {nextTick,} from './util/next-tick';
+import {devtools,} from './util/env';
 
 export const MAX_UPDATE_COUNT: number = 100;
 

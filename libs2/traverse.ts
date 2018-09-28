@@ -4,8 +4,8 @@
  * 这个文件就是用来深度遍历对象 / 数组的
  */
 
-import { isObject, } from './util/index.ts';
-import { _Set as Set, SimpleSet, } from './util/env.ts';
+import { isObject, } from './util/index';
+import { _Set as Set, SimpleSet, } from './util/env';
 
 const seenObjects: SimpleSet | Set = new Set();
 

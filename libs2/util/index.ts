@@ -1,8 +1,8 @@
 'use strict';
 
-export { generateParser, getPathInnerModule, getValueParent, setInPath, } from './path.ts';
-export { arrayMethods, remove, } from './array.ts';
-export { nextTick, } from './next-tick.ts';
+export { generateParser, getPathInnerModule, getValueParent, setInPath, } from './path';
+export { arrayMethods, remove, } from './array';
+export { nextTick, } from './next-tick';
 
 /**
  * 自己写的
@@ -74,7 +74,7 @@ export function isPlainObject (obj: object): boolean {
  * @param val {*?}
  * @param enumerable {boolean?}
  */
-export function def (obj: object, key: string, val: any, enumerable?: boolean = false): void {
+export function def (obj: object, key: string, val: any, enumerable: boolean = false): void {
     Object.defineProperty(obj, key, {
         value: val,
         enumerable: !!enumerable,
@@ -92,6 +92,7 @@ export function def (obj: object, key: string, val: any, enumerable?: boolean = 
  */
 export function protoAugment(target: object, src: object, keys?: string[]): void {
     /* eslint-disable no-proto */
+    //@ts-ignore
     target.__proto__ = src
     /* eslint-enable no-proto */
 }

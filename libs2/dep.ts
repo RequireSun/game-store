@@ -1,8 +1,8 @@
 'use strict';
 
 // Dep 统计用的 uid
-import Watcher from "./watcher.ts";
-import { remove, } from './util/index.ts';
+import Watcher from "./watcher";
+import { remove, } from './util/index';
 
 let uid: number = 0;
 

@@ -9,11 +9,11 @@ import {
 
     isPlainObject,
     arrayMethods,
-} from './util/index.ts';
+} from './util/index';
 
-import { hasProto, } from './util/env.ts';
+import { hasProto, } from './util/env';
 
-import Dep from './dep.ts';
+import Dep from './dep';
 
 const arrayKeys = Object.getOwnPropertyNames(arrayMethods);
 
