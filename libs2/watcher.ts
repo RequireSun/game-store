@@ -19,6 +19,7 @@ export interface WatcherBase {
     teardown: () => void,
     run: () => void,
     value: any,
+    cb: (val: any, oldVal: any) => void,
 }
 
 /**
@@ -336,6 +337,8 @@ export default class Watcher implements WatcherBase {
 export class WatcherShell implements WatcherBase {
     expression: string;
     target: Watcher;
+    //TODO 这里会有问题
+    cb: undefined = undefined;
 
     constructor(vm: GameStore, expOrFn: string | ((obj: object) => any), target: Watcher) {
         vm._watchers.push(this);

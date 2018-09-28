@@ -2,8 +2,6 @@
 Game Store
 ======
 
-手动运行 node_modules 模块: `npx`.
-
 主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.
 
 编写参考: [https://segmentfault.com/a/1190000006599500](https://segmentfault.com/a/1190000006599500)

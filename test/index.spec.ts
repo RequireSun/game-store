@@ -1,12 +1,15 @@
 'use strict';
 
-const assert = require('assert');
-const myCase = require('../example/js/index.ts');
+import 'assert';
+import { run, } from '../example/js/index';
+
+// const assert = require('assert');
+// const myCase = require('../example/js/index.ts');
 
 
 describe('test', () => {
     it('first case', (done) => {
-        myCase.run(done);
+        run(done);
     });
 });
 

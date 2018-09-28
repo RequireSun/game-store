@@ -1,9 +1,10 @@
 'use strict';
 
-import { create, } from './create.ts';
-const assert = require('assert');
+import * as assert from 'assert';
+import { create, } from './create';
+// const assert = require('assert');
 
-export const run = (done? = () => {}) => {
+export const run = (done = () => {}) => {
     const instance = create();
 
     let pTask: Promise<any> = Promise.resolve();

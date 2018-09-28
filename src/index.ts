@@ -1,6 +1,6 @@
 'use strict';
 
-import Watcher, { WatcherShell, WatcherBase, } from "../libs2/watcher.ts";
+import Watcher, { WatcherShell, WatcherBase, } from "../libs2/watcher";
 
 import {
     getPathInnerModule,
@@ -10,9 +10,9 @@ import {
     hasOwn,
     nextTick,
     descriptor,
-} from '../libs2/util/index.ts';
+} from '../libs2/util/index';
 
-import { observe, Observer, } from '../libs2/observer.ts';
+import { observe, Observer, } from '../libs2/observer';
 
 interface StoreConfig {
     state: object,
@@ -24,6 +24,10 @@ interface GameStoreData {
     __ob__: Observer,
     _watchers : WatcherBase[],
 }
+
+// interface ObjectJson {
+//     [key: string]: (number | string | boolean | undefined | null | ObjectJson);
+// }
 
 // interface GameStore {
 //     _data: GameStoreData;
@@ -59,6 +63,9 @@ export default class GameStore {
     _isModule: boolean = false;
 
     // [key: string]: (number | string | object | boolean | ((...args: any[]) => any) | { [key: string]: ((...args: any[]) => any), });
+    // [key: string]: (number | string | boolean | undefined | null | ObjectJson | ((...args: any[]) => any) | { [key: string]: ((...args: any[]) => any), });
+
+    [key: string]: any;
 
     static generateData(state: object): GameStoreData {
         const data: object = {
@@ -76,7 +83,7 @@ export default class GameStore {
         return <GameStoreData>data;
     }
 
-    constructor({state, mutations, modules = {},}: StoreConfig = {}) {
+    constructor({state = {}, mutations, modules = {},}: StoreConfig = { state: {}, }) {
 
         this._mutations = mutations;
         this._data = GameStore.generateData(state);
@@ -295,7 +302,7 @@ export default class GameStore {
                     // 如果已经有监听这个东西的 watcher 了, 那么就要去删除并重建
                     // 上面已经通过 throw error 消灭了重复定义 module 的情况了, 所以直接搞 watcher 应该没问题
                     const key: string = item.expression;
-                    const cb: (val, oldVal) => any = item.cb;
+                    const cb: (val: any, oldVal: any) => any = item.cb;
                     item.teardown();
                     const watcher = this.watch(key, cb);
                     // 试试能不能通过黑科技来触发 cb

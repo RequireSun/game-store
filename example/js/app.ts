@@ -1,6 +1,6 @@
 'use strict';
 
-import { run, } from './index.ts';
+import { run, } from './index';
 
 run();
 

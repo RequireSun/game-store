@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "diagnostics": true,
+    "extendedDiagnostics": true,
+    "module": "commonjs",
+    "lib": [
+      "es2016"
+    ],
+    "experimentalDecorators": true
+  }
+}
