@@ -4,7 +4,7 @@
   "description": "主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.",
   "main": "dist/game-store.js",
   "module": "dist/game-store.esm.js",
-  "types": "types",
+  "types": "dist/game-store.d.ts",
   "scripts": {
     "test": "jest test/*.spec.ts --notify --config=jest.config.js",
     "cov": "jest test/*.spec.ts --notify --config=jest.config.js --coverage",
