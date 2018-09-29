@@ -75,30 +75,8 @@ export const hasSymbol: boolean =
 
 let _Set;
 
-type sorn = string | number;
-
 // 写这个是因为 mocha 引用 babel 编译有问题, 不会忽略 typescript 的 interface
 // let SimpleSet;
-
-declare interface SimpleSet<T> {
-    set: { [key: string]: boolean, };
-
-    /**
-     * @param key {string|number}
-     * @returns {boolean}
-     */
-    has: (key: T) => boolean;
-
-    /**
-     * @param key {string|number}
-     */
-    add: (key: T) => this;
-
-    /**
-     * @returns {void}
-     */
-    clear: () => void;
-}
 
 /* istanbul ignore if */ // $flow-disable-line
 if ('undefined' !== typeof(Set) && isNative(Set)) {
@@ -133,6 +111,25 @@ if ('undefined' !== typeof(Set) && isNative(Set)) {
     }
 }
 
+export interface SimpleSet<T> {
+    set: { [key: string]: boolean, };
+
+    /**
+     * @param key {string|number}
+     * @returns {boolean}
+     */
+    has: (key: T) => boolean;
+
+    /**
+     * @param key {string|number}
+     */
+    add: (key: T) => this;
+
+    /**
+     * @returns {void}
+     */
+    clear: () => void;
+}
+
 export { _Set, };
-export { SimpleSet, };
 

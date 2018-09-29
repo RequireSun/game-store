@@ -112,22 +112,6 @@ export function copyAugment(target: object, src: object, keys: string[]): void {
     }
 }
 
-/**
- * decorator that sets the descriptor property of a class field.
- * @param name string
- * @param value true|false
- */
-export function descriptor(name: string, value: boolean) {
-    return function (target: any, propertyKey: string) {
-        let descriptor = Object.getOwnPropertyDescriptor(target, propertyKey) || {};
-
-        if (descriptor[name] != value) {
-            descriptor[name] = value;
-            Object.defineProperty(target, propertyKey, descriptor)
-        }
-    };
-}
-
 // 放在这里是因为 array 对 def 的循环依赖
 export { arrayMethods, remove, } from './array';
 

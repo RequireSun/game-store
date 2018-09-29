@@ -11,7 +11,6 @@ import {
     isObject,
     hasOwn,
     nextTick,
-    descriptor,
 } from '../libs2/util/index';
 
 import { observe, Observer, } from '../libs2/observer';
@@ -53,12 +52,7 @@ export interface GameStoreData {
 // }
 
 export default class GameStore {
-    @descriptor('configurable', false)
-    @descriptor('enumerable', false)
     _data: GameStoreData;
-
-    @descriptor('configurable', false)
-    @descriptor('enumerable', false)
     _mutations: { [key: string]: ((...args: any[]) => any), };
 
     /**
@@ -66,7 +60,6 @@ export default class GameStore {
      * @type {boolean}
      * @private
      */
-    @descriptor('enumerable', false)
     _isModule: boolean = false;
 
     // [key: string]: (number | string | object | boolean | ((...args: any[]) => any) | { [key: string]: ((...args: any[]) => any), });
@@ -75,14 +68,22 @@ export default class GameStore {
     [key: string]: any;
 
     static generateData(state: object): GameStoreData {
-        const data: object = {
-            _watchers: [],
-            _isBeingDestroyed: false,
-        };
+        const data: object = {};
 
-        descriptor('enumerable', false)(data, '_watchers');
-        descriptor('configurable', false)(data, '_watchers');
-        descriptor('enumerable', false)(data, '_isBeingDestroyed');
+        Object.defineProperties(data, {
+            _watchers: {
+                enumerable: false,
+                configurable: false,
+                writable: false,
+                value: [],
+            },
+            _isBeingDestroyed: {
+                enumerable: false,
+                configurable: true,
+                writable: true,
+                value: false,
+            },
+        });
 
         if (state) {
             Object.assign(data, state);
@@ -95,8 +96,24 @@ export default class GameStore {
 
     constructor({state = {}, mutations, modules = {},}: StoreConfig = { state: {}, }) {
 
-        this._mutations = mutations;
-        this._data = GameStore.generateData(state);
+        Object.defineProperties(this, {
+            _data: {
+                configurable: false,
+                enumerable: false,
+                writable: false,
+                value: GameStore.generateData(state),
+            },
+            _mutations: {
+                configurable: false,
+                enumerable: false,
+                writable: false,
+                value: mutations,
+            },
+            _isModule: {
+                enumerable: false,
+                value: false,
+            },
+        });
 
         // 数据代理
         // 实现 vm.xxx -> vm._data.xxx

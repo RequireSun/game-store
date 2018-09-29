@@ -5,11 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest test/*.spec.ts --notify --config=jest.config.js",
-    "_test": "mocha test/*.spec.js --compilers ts:@babel/register js:@babel/register",
-    "__test": "mocha --require @babel/register test/*.spec.js",
-    "___test": "mocha --require scripts/babel-hook.js test/*.spec.js",
-    "cov": "nyc npm test",
-    "_cov": "nyc --require @babel/register mocha --file test/*.spec.js --compilers ts:@babel/register --compilers js:@babel/register",
+    "cov": "jest test/*.spec.ts --notify --config=jest.config.js --coverage",
     "build": "rimraf dist && webpack --config webpack.config.js",
     "dev": "node scripts/server.js"
   },
@@ -47,7 +43,6 @@
     "open-browser-webpack-plugin": "0.0.5",
     "redux-actions": "^2.3.2",
     "rimraf": "^2.6.2",
-    "ts-jest": "^23.10.2",
     "typescript": "^3.1.1",
     "vue-own-redux": "^0.2.0",
     "webpack": "^4.19.1",
