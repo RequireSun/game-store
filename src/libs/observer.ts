@@ -11,7 +11,7 @@ import {
     arrayMethods,
 } from './util/index';
 
-import { GameStoreGetterSetter, } from '../src/index';
+import { GameStoreGetterSetter, } from '../game-store';
 
 import { hasProto, } from './util/env';
 

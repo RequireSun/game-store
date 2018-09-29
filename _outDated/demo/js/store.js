@@ -1,6 +1,6 @@
 'use strict';
 
-import DataSource from '../../index.js';
+import DataSource from '../../../index.js';
 import {INCREMENT_A,ADD_A,} from './actions.js';
 
 export default () => new DataSource({

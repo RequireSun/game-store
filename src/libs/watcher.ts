@@ -9,7 +9,7 @@ import {
 
 // 这个 reference 好像没用
 /// <reference path="../src/index.d.ts" />
-import {GameStoreData} from '../src/index';
+import {GameStoreData} from '../game-store';
 
 import Dep, { pushTarget, popTarget, } from './dep';
 import { traverse, } from './traverse';

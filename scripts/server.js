@@ -16,6 +16,7 @@ const config = {
         filename: 'app.js',
     },
     mode: 'development',
+    // 这个同样适用于 tsconfig.json 配置中开启了 sourceMap 的 typescript, 会把 ts-loader 生成的 sourceMap 拷出来
     devtool: 'inline-source-map',
 };
 

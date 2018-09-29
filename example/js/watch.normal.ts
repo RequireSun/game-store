@@ -1,6 +1,6 @@
 'use strict';
 
-import GameStore from '../../src/index';
+import GameStore from '../../src/game-store';
 const assert = require('assert');
 
 export const run: () => GameStore = () => {

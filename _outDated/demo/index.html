@@ -6,13 +6,13 @@
 </head>
 <body>
 <!-- 因为 chrome 不支持 import 的时候不带 .js 所以只能通过这种恶心的方式来使用了 -->
-<script src="../node_modules/redux-actions/dist/redux-actions.js"></script>
+<script src="../../node_modules/redux-actions/dist/redux-actions.js"></script>
 
 <script type="module">
-    import DataStore from '../src/dataStore.js';
+    import DataStore from '../dataStore.js';
     import createStore from './js/store.js';
     import createActions from './js/actions.js';
-    import bindActions from '../node_modules/vue-own-redux/bindActions.js';
+    import bindActions from '../../node_modules/vue-own-redux/bindActions.js';
 
     const ds = createStore();
 

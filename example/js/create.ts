@@ -1,6 +1,6 @@
 'use strict';
 
-import GameStore from "../../src/index";
+import GameStore from "../../src/game-store";
 
 export const INCREMENT_A: string = 'INCREMENT_A';
 export const ADD_A: string = 'ADD_A';

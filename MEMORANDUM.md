@@ -12,3 +12,7 @@
 1. plugin-proposal-decorators 必须放在 proposal-class-properties 之前
 
 1. tsconfig.compilerOptions.lib 里面的 `webworker` 是为了使用 MessageChannel.
+
+1. tsconfig.compilerOptions.declaration 用来生成 .d.ts 文件
+
+1. tsconfig.compilerOptions.sourceMap typescript 的 sourceMap 是需要单独配置的

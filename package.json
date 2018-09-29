@@ -2,11 +2,13 @@
   "name": "game-store",
   "version": "0.2.1",
   "description": "主体逻辑摘自 vue.js observer 模块, 并根据项目组日常使用情况进行了一些改造.",
-  "main": "index.js",
+  "main": "dist/game-store.js",
+  "module": "dist/game-store.esm.js",
+  "types": "types",
   "scripts": {
     "test": "jest test/*.spec.ts --notify --config=jest.config.js",
     "cov": "jest test/*.spec.ts --notify --config=jest.config.js --coverage",
-    "build": "rimraf dist && webpack --config webpack.config.js",
+    "build": "rimraf dist types && webpack --config webpack.config.js",
     "dev": "node scripts/server.js"
   },
   "repository": {
@@ -43,6 +45,8 @@
     "open-browser-webpack-plugin": "0.0.5",
     "redux-actions": "^2.3.2",
     "rimraf": "^2.6.2",
+    "ts-jest": "^23.10.2",
+    "ts-loader": "^5.2.1",
     "typescript": "^3.1.1",
     "vue-own-redux": "^0.2.0",
     "webpack": "^4.19.1",

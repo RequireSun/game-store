@@ -1,8 +1,8 @@
-import Watcher, {WatcherShell,} from '../libs/watcher.js';
-import {observe,} from '../libs/observer.js';
-import {isObject,setInPath,getParentPath,getInnerModulePath,} from '../libs/util/index.js';
-import {hasOwn,} from '../libs/util/index.js';
-import {nextTick,} from '../libs/util/next-tick.js';
+import Watcher, {WatcherShell,} from './libs/watcher.js';
+import {observe,} from './libs/observer.js';
+import {isObject,setInPath,getParentPath,getInnerModulePath,} from './libs/util/index.js';
+import {hasOwn,} from './libs/util/index.js';
+import {nextTick,} from './libs/util/next-tick.js';
 
 /**
  * @todo 动态插入 module 功能

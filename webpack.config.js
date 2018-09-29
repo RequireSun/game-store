@@ -7,7 +7,7 @@ const path = require('path');
 // plugin-proposal-decorators 必须放在 proposal-class-properties 之前
 
 module.exports = {
-    entry: './src/index.ts',
+    entry: './src/game-store.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'game-store.js',
@@ -21,10 +21,21 @@ module.exports = {
         contentBase: path.resolve(__dirname, 'dist'),
     },
     module: {
-        rules: [{
-            test: /\.ts$/,
-            loader: 'babel-loader',
-        }, ],
+        rules: [
+            // {
+            //     test: /\.ts$/,
+            //     loader: 'babel-loader',
+            // },
+            {
+                test: /\.ts$/,
+                loader: 'ts-loader',
+                options: {
+                    compilerOptions: {
+                        declarationDir: 'types',
+                    },
+                },
+            },
+        ],
     },
     resolve: {
         extensions: [ '.ts', '.tsx', '.js', ],

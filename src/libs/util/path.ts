@@ -1,6 +1,6 @@
 'use strict';
 
-import GameStore from '../../src/index';
+import GameStore from '../../game-store';
 
 /**
  * Parse simple path.

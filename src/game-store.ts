@@ -1,8 +1,6 @@
 'use strict';
 
-import Watcher, { WatcherShell, WatcherBase, } from "../libs2/watcher";
-
-// import { GameStoreData, } from './index.d';
+import Watcher, { WatcherShell, WatcherBase, } from "./libs/watcher";
 
 import {
     getPathInnerModule,
@@ -11,9 +9,9 @@ import {
     isObject,
     hasOwn,
     nextTick,
-} from '../libs2/util/index';
+} from './libs/util/index';
 
-import { observe, Observer, } from '../libs2/observer';
+import { observe, Observer, } from './libs/observer';
 
 interface StoreConfig {
     state: object,
