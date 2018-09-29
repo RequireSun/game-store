@@ -11,6 +11,8 @@ import {
     arrayMethods,
 } from './util/index';
 
+import { GameStoreGetterSetter, } from '../src/index';
+
 import { hasProto, } from './util/env';
 
 import Dep from './dep';
@@ -105,8 +107,8 @@ export class Observer {
                 // 只有对象上的 get 和 set 函数不是监控器搞上去的的时候才会去添加新的监控
                 if (
                     !property ||
-                    !property.get || !property.get._isOb ||
-                    !property.set || !property.set._isOb
+                    !property.get || !(<GameStoreGetterSetter>property.get)._isOb ||
+                    !property.set || !(<GameStoreGetterSetter>property.set)._isOb
                 ) {
                     defineReactive(value, keys[i]);
                 }
@@ -145,7 +147,7 @@ function dependArray(value: any[]): void {
  * @param customSetter {Function?}
  * @param shallow {boolean?}
  */
-export function defineReactive(obj, key, val, customSetter, shallow): void {
+export function defineReactive(obj, key, val?, customSetter?, shallow?): void {
     const dep: Dep = new Dep();
 
     const property: PropertyDescriptor = Object.getOwnPropertyDescriptor(obj, key);

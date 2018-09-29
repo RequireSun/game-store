@@ -1,7 +1,6 @@
 'use strict';
 
 export { generateParser, getPathInnerModule, getValueParent, setInPath, } from './path';
-export { arrayMethods, remove, } from './array';
 export { nextTick, } from './next-tick';
 
 /**
@@ -91,6 +90,7 @@ export function def (obj: object, key: string, val: any, enumerable: boolean = f
  * @param keys {*?}
  */
 export function protoAugment(target: object, src: object, keys?: string[]): void {
+    //TODO 看看 proto 怎么处理
     /* eslint-disable no-proto */
     //@ts-ignore
     target.__proto__ = src
@@ -128,4 +128,6 @@ export function descriptor(name: string, value: boolean) {
     };
 }
 
+// 放在这里是因为 array 对 def 的循环依赖
+export { arrayMethods, remove, } from './array';
 

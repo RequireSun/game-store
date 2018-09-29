@@ -4,7 +4,9 @@
     "extendedDiagnostics": true,
     "module": "commonjs",
     "lib": [
-      "es2016"
+      "dom",
+      "es2016",
+      "webworker"
     ],
     "experimentalDecorators": true
   }

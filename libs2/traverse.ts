@@ -7,7 +7,7 @@
 import { isObject, } from './util/index';
 import { _Set as Set, SimpleSet, } from './util/env';
 
-const seenObjects: SimpleSet | Set = new Set();
+const seenObjects: SimpleSet<number> | Set<number> = new Set();
 
 /**
  * Recursively traverse an object to evoke all converted
@@ -29,7 +29,7 @@ export function traverse(val: object): void {
  * @param seen {SimpleSet}
  * @private
  */
-function _traverse(val: any, seen: SimpleSet | Set): void {
+function _traverse(val: any, seen: SimpleSet<number> | Set<number>): void {
     let i: number, keys: string[];
     const isA: boolean = Array.isArray(val);
     // VNode 删掉了

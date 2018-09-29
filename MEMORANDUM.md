@@ -10,3 +10,5 @@
 1. plugin-transform-runtime 复用公共函数, 缩小包大小 21k -> 20k
 
 1. plugin-proposal-decorators 必须放在 proposal-class-properties 之前
+
+1. tsconfig.compilerOptions.lib 里面的 `webworker` 是为了使用 MessageChannel.

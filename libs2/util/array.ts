@@ -4,7 +4,7 @@ import { def, } from './index';
 import {Observer} from '../observer';
 
 const arrayProto: object = Array.prototype;
-export const arrayMethods: Array = Object.create(arrayProto);
+export const arrayMethods: { [key: string]: (...args: any[]) => any, } = Object.create(arrayProto);
 
 const methodsToPatch: string[] = [
     'push',

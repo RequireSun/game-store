@@ -1,7 +1,7 @@
 'use strict';
 
 // Dep 统计用的 uid
-import Watcher from "./watcher";
+import { WatcherBase, } from "./watcher";
 import { remove, } from './util/index';
 
 let uid: number = 0;
@@ -44,14 +44,14 @@ export default class Dep {
     /**
      * @param sub {Watcher}
      */
-    addSub(sub: Watcher): void {
+    addSub(sub: WatcherBase): void {
         this.subs.push(sub);
     }
 
     /**
      * @param sub {Watcher}
      */
-    removeSub(sub: Watcher): void {
+    removeSub(sub: WatcherBase): void {
         remove(this.subs, sub);
     }
 
@@ -83,7 +83,7 @@ const targetStack: WatcherBase[] = [];
 /**
  * @param _target {?Watcher}
  */
-export function pushTarget(_target: Watcher): void {
+export function pushTarget(_target: WatcherBase): void {
     if (Dep.target) targetStack.push(Dep.target);
     Dep.target = _target;
 }

@@ -1,5 +1,7 @@
 'use strict';
 
+import GameStore from '../../src/index';
+
 /**
  * Parse simple path.
  * 简单路径的解析

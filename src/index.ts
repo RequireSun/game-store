@@ -2,7 +2,7 @@
 
 import Watcher, { WatcherShell, WatcherBase, } from "../libs2/watcher";
 
-import { GameStoreData, } from './index.d';
+// import { GameStoreData, } from './index.d';
 
 import {
     getPathInnerModule,
@@ -22,7 +22,7 @@ interface StoreConfig {
     modules?: { [key: string]: StoreConfig, },
 }
 
-interface GameStoreGetterSetter {
+export interface GameStoreGetterSetter {
     (...args: any[]): any;
     _isOb?: boolean;
     _vmOb?: boolean;
@@ -79,9 +79,9 @@ export default class GameStore {
             _watchers: [],
             _isBeingDestroyed: false,
         };
+
         descriptor('enumerable', false)(data, '_watchers');
         descriptor('configurable', false)(data, '_watchers');
-
         descriptor('enumerable', false)(data, '_isBeingDestroyed');
 
         if (state) {
@@ -168,7 +168,7 @@ export default class GameStore {
      */
     setIn(path: string, value: any): void {
         // 在这个地方解析路径中是否有 module, 有的话直接交由对应 setIn 来执行
-        const modulePath: string | void = getPathInnerModule(this._data, path);
+        const modulePath: string | void = getPathInnerModule(this, path);
 
         if (modulePath) {
             // 偷懒了, 通过这个方法获取目标 module

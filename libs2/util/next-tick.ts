@@ -1,5 +1,7 @@
 'use strict';
 
+/// <reference types="typescript" />
+
 import { noop, handleError, } from './index';
 import { isIOS, isNative, } from './env';
 
@@ -87,7 +89,7 @@ if ('undefined' !== typeof(setImmediate) && isNative(setImmediate)) {
 /* istanbul ignore next, $flow-disable-line */
 if ('undefined' !== typeof(Promise) && isNative(Promise)) {
     // 有原生 promise 支持的话
-    const p: Promise = Promise.resolve();
+    const p: Promise<any> = Promise.resolve();
     // 就直接使用 promise 当场触发 then 的方式
     microTimerFunc = () => {
         p.then(flushCallbacks);
@@ -101,7 +103,7 @@ if ('undefined' !== typeof(Promise) && isNative(Promise)) {
         // 但是当 callbacks 都被 push 到 microtask 队列中而这个 microtask 队列又没有被冲刷掉的时候,
         // 它会被卡在一个奇怪的状态, 直到浏览器需要去做其他的操作, 比如处理一个 timer.
         // 因此我们可以通过添加一个空的 timer 来“强制”冲刷 microtask 队列.
-        if (isIOS) setTimeout(noop);
+        if (isIOS) setTimeout(noop, 0);
     };
 } else {
     // fallback to macro

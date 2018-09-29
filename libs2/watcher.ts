@@ -18,12 +18,19 @@ import { queueWatcher, } from './scheduler';
 let uid: number = 0;
 
 export interface WatcherBase {
+    id: number;
     expression: string;
-    get: () => any,
-    teardown: () => void,
-    run: () => void,
-    value: any,
-    cb: (val: any, oldVal: any) => void,
+    vm: GameStoreData;
+    value: any;
+    user: boolean;
+
+    before: () => void;
+    run: () => void;
+    get: () => any;
+    teardown: () => void;
+    cb: (val: any, oldVal: any) => void;
+    addDep: (dep: Dep) => void;
+    update: () => void;
 }
 
 /**
@@ -39,7 +46,10 @@ export default class Watcher implements WatcherBase {
     deep: boolean;
     user: boolean;
     dirty: boolean;         //TODO 这个不知道是干啥的
-    before: () => void;     //TODO 删掉
+    /**
+     * 在 run 之前执行的
+     */
+    before: () => void;
     cb: (val: any, oldVal: any) => void;
     /**
      * watcher 的 id
@@ -342,12 +352,39 @@ export class WatcherShell implements WatcherBase {
     expression: string;
     target: Watcher;
     //TODO 这里会有问题
+    id: number;
     cb: undefined = undefined;
+    before: () => void;
+    value: any;
+    vm: GameStoreData;
+    user: boolean;
 
     constructor(vm: GameStoreData, expOrFn: string | ((obj: object) => any), target: Watcher) {
+        this.id = ++uid; // uid for batching
         vm._watchers.push(this);
         this.expression = expOrFn.toString();
         this.target = target;
+
+        Object.defineProperties(this, {
+            value: {
+                get: (): any => {
+                    return this.target.value;
+                },
+                set: (newVal: any): void => {
+                    this.target.value = newVal;
+                },
+            },
+            vm: {
+                get: (): GameStoreData => {
+                    return this.target.vm;
+                },
+            },
+            user: {
+                get: (): boolean => {
+                    return this.target.user;
+                },
+            },
+        });
     }
 
     get(): any {
@@ -362,11 +399,11 @@ export class WatcherShell implements WatcherBase {
         return this.target.run();
     }
 
-    public get value(): any {
-        return this.target.value;
+    addDep(dep: Dep): void {
+        return this.target.addDep(dep);
     }
 
-    public set value(newVal: any) {
-        this.target.value = newVal;
+    update(): void {
+        return this.target.update();
     }
 }
