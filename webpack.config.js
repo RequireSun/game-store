@@ -30,9 +30,15 @@ module.exports = {
                 test: /\.ts$/,
                 loader: 'ts-loader',
                 options: {
-                    compilerOptions: {
-                        declarationDir: 'types',
-                    },
+                    // compilerOptions: {
+                    //     declarationDir: 'types',
+                    //     outDir: 'dist',
+                    //     // outFile: 'game-store.js',
+                    // },
+                    // exclude: [
+                    //     "example",
+                    //     "test"
+                    // ],
                 },
             },
         ],

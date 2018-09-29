@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "diagnostics": true,
     "extendedDiagnostics": true,
     "module": "commonjs",
     "sourceMap": true,
