@@ -4,6 +4,7 @@ import 'assert';
 import { run as sectWatch, } from '../example/js/watch.normal.sect';
 import { run as sectWatchNoDeclare, } from '../example/js/watch.no.declare.sect';
 import { run as sectWatchObject, } from '../example/js/watch.object.sect';
+import { run as sectSetIn, } from '../example/js/watch.setIn.sect';
 
 // const assert = require('assert');
 // const myCase = require('../example/js/index.ts');
@@ -20,6 +21,10 @@ describe('watch', () => {
 
     it('watch of object property: should only emitted once during a round', (done) => {
         sectWatchObject(done);
+    });
+
+    it('watch of no declare property with setIn: should only emitted after `setIn` called', (done) => {
+        sectSetIn(done);
     });
 });
 
