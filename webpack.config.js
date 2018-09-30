@@ -2,6 +2,7 @@
 
 const os = require('os');
 const path = require('path');
+const DtsGeneratorPlugin = require('dts-generator-webpack-plugin').default;
 
 // plugin-transform-runtime 复用公共函数, 缩小包大小 21k -> 20k
 // plugin-proposal-decorators 必须放在 proposal-class-properties 之前
@@ -57,5 +58,8 @@ module.exports = {
     //             "istanbul"
     //         ]
     //     }
-    // }
+    // },
+    plugins: [
+        new DtsGeneratorPlugin(require('./dts.config.js')),
+    ],
 };
