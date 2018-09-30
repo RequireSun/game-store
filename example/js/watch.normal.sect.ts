@@ -1,9 +1,9 @@
 'use strict';
 
 import GameStore from '../../src/game-store';
-const assert = require('assert');
+import { equal, } from 'assert';
 
-export const run: () => GameStore = () => {
+export const run: (done: () => any) => GameStore = (done: (() => any) = () => {}) => {
     const instance = new GameStore({
         state: {
             a: 1,
@@ -11,10 +11,10 @@ export const run: () => GameStore = () => {
     });
 
     instance.watch('a', (val, oldVal) => {
-        console.log('a', val, oldVal);
+        equal(val, 2, 'new value of a');
+        equal(oldVal, 1, 'old value of a');
 
-        assert.equal(val, 2, 'a');
-        assert.equal(oldVal, 1, 'a');
+        done();
     });
 
     setTimeout(() => {

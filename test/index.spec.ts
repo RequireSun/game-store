@@ -1,15 +1,25 @@
 'use strict';
 
 import 'assert';
-import { run, } from '../example/js/index';
+import { run as sectWatch, } from '../example/js/watch.normal.sect';
+import { run as sectWatchNoDeclare, } from '../example/js/watch.no.declare.sect';
+import { run as sectWatchObject, } from '../example/js/watch.object.sect';
 
 // const assert = require('assert');
 // const myCase = require('../example/js/index.ts');
 
 
-describe('test', () => {
-    it('first case', (done) => {
-        run(done);
+describe('watch', () => {
+    it('normal watch: callback should be emitted', (done) => {
+        sectWatch(done);
+    });
+
+    it('watch of no declare property: should not be emitted', (done) => {
+        sectWatchNoDeclare(done);
+    });
+
+    it('watch of object property: should only emitted once during a round', (done) => {
+        sectWatchObject(done);
     });
 });
 
